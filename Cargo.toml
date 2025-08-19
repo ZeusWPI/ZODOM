@@ -1,0 +1,9 @@
+[package]
+name = "zodom"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+askama = "0.14.0"
+tokio = { version = "1.47.1", features = ["rt", "rt-multi-thread", "macros"] }
+axum = "0.8.4"
