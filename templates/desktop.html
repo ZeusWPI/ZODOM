@@ -1,0 +1,172 @@
+<html lang="en-US">
+<head>
+    <link rel="stylesheet" href="stylesheets/buttons.css" type="text/css">
+    <title>ZODOM</title>
+</head>
+<body>
+
+<div id="main-body">
+    <!-- Last Song -->
+    <span class="songbox-label" id="last-song-label">Last Song</span>
+    <div class="song-box" id="last-song-box">
+        <div class="song-info">
+            <img src="../assets/placeholders/song_cover.jpg" class="song-cover">
+            <span class="song-title">No Time to Explain</span>
+            <span class="song-artist">Good Kid</span>
+        </div>
+        <button class="vote-btn good-btn">
+            <span class="shadow"></span>
+            <span class="edge"></span>
+            <span class="front">G
+            </span>
+        </button>
+        <button class="vote-btn bad-btn">
+            <span class="shadow"></span>
+            <span class="edge"></span>
+            <span class="front">B
+            </span>
+        </button>
+    </div>
+
+    <!-- Current Song-->
+    <span class="songbox-label" id="current-song-label">Current Song</span>
+    <div class="song-box" id="current-song-box">
+        <div class="song-info">
+            <img src="../assets/placeholders/song_cover_2.jpg" class="song-cover">
+            <span class="song-title">Une vie à t'aimer</span>
+            <span class="song-artist">Lorien Testard, Alice Duport-Percier, Victor Borba</span>
+        </div>
+        <button class="vote-btn good-btn">
+            <span class="shadow"></span>
+            <span class="edge"></span>
+            <span class="front">G</span>
+        </button>
+        <button class="vote-btn bad-btn">
+            <span class="shadow"></span>
+            <span class="edge"></span>
+            <span class="front">B</span>
+        </button>
+    </div>
+</div>
+</body>
+
+</html>
+<style>
+    html {
+        text-rendering: optimizeLegibility;
+
+        /** Base colors */
+        --clr-dark-a0: #000000;
+        --clr-light-a0: #ffffff;
+
+        /** Theme primary colors */
+        --clr-primary-a0: #ff8000;
+        --clr-primary-a10: #f28120;
+        --clr-primary-a20: #e68231;
+        --clr-primary-a30: #d9823f;
+        --clr-primary-a40: #cb824b;
+        --clr-primary-a50: #be8256;
+
+        /** Theme surface colors */
+        --clr-surface-a0: #ffffff;
+        --clr-surface-a10: #f0f0f0;
+        --clr-surface-a20: #e1e1e1;
+        --clr-surface-a30: #d3d3d3;
+        --clr-surface-a40: #c5c5c5;
+        --clr-surface-a50: #b6b6b6;
+
+        /** Theme tonal surface colors */
+        --clr-surface-tonal-a0: #fff2e7;
+        --clr-surface-tonal-a10: #f0e5db;
+        --clr-surface-tonal-a20: #e1d8cf;
+        --clr-surface-tonal-a30: #d3cbc3;
+        --clr-surface-tonal-a40: #c5beb8;
+        --clr-surface-tonal-a50: #b7b1ac;
+    }
+
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        font-family: "Inter", sans-serif;
+    }
+
+    #main-body {
+        display: grid;
+        grid-template-columns: 30% 60%;
+        grid-column-gap: 5em;
+        width: 80vw;
+        margin: auto;
+    }
+
+    .songbox-label {
+        grid-row: 1;
+        text-align: center;
+        font-weight: bolder;
+        font-size: 2em;
+    }
+
+    #last-song-label {
+        grid-column: 1;
+    }
+
+    #current-song-label {
+        grid-column: 2;
+    }
+
+    #last-song-box {
+        width: 100%;
+        grid-column: 1;
+    }
+
+    #current-song-box {
+        width: 100%;
+        grid-column: 2;
+    }
+
+    .song-box {
+        background-color: #dddddd;
+        border-radius: 2em;
+        filter: drop-shadow(0.5em 0.5em 10px rgba(0, 0, 0, 0.4));
+        display: grid;
+        grid-template-columns: 66% 33%;
+        row-gap: 1em;
+        padding-top: 1.5em;
+        padding-bottom: 1.5em;
+        padding-right: 2%;
+        height: 80vh;
+        margin-top: auto;
+        margin-bottom: auto;
+        grid-row: 2;
+    }
+
+    .song-cover {
+        width: 15vmin;
+        height: 15vmin;
+        border-radius: 2em;
+    }
+
+    .song-title {
+        margin-top: 0.5em;
+        margin-bottom: 0.25em;
+        font-size: 1.5em;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .song-artist {
+        font-size: 1em;
+    }
+
+    .song-info {
+        grid-row: 1 / 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+
+</style>

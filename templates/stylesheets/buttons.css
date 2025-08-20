@@ -1,0 +1,118 @@
+.good-btn {
+    grid-row: 1;
+    margin-right: 2em;
+}
+
+.good-btn .front {
+    background: hsl(90, 71%, 49%) !important;
+}
+
+.good-btn .edge {
+    background: linear-gradient(
+            to left,
+            hsl(90deg 100% 16%) 0%,
+            hsl(90deg 100% 32%) 8%,
+            hsl(90deg 100% 32%) 92%,
+            hsl(90deg 100% 16%) 100%
+    ) !important;
+}
+
+.bad-btn {
+    grid-row: 2;
+}
+
+.bad-btn .front {
+    background: hsl(345deg 100% 47%);
+}
+
+.bad-btn .edge {
+    background: linear-gradient(
+            to left,
+            hsl(340deg 100% 16%) 0%,
+            hsl(340deg 100% 32%) 8%,
+            hsl(340deg 100% 32%) 92%,
+            hsl(340deg 100% 16%) 100%
+    ) !important;
+}
+
+.vote-icon {
+    width: 5em;
+    aspect-ratio: 1/1;
+}
+
+.vote-btn {
+    width: 100%;
+    height: 100%;
+    grid-column: 2;
+
+    position: relative;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    outline-offset: 4px;
+    transition: filter 250ms;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.vote-btn .shadow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    background: hsl(0deg 0% 0% / 0.25);
+    will-change: transform;
+    transform: translateY(4px);
+    transition: transform 600ms cubic-bezier(.3, .7, .4, 1);
+}
+
+.vote-btn .edge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    background: linear-gradient(
+            to left,
+            hsl(340deg 100% 16%) 0%,
+            hsl(340deg 100% 32%) 8%,
+            hsl(340deg 100% 32%) 92%,
+            hsl(340deg 100% 16%) 100%
+    );
+}
+
+.vote-btn .front {
+    display: block;
+    position: relative;
+    padding: 12px 27px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    color: white;
+    background: hsl(345deg 100% 47%);
+    height: 95%;
+    will-change: transform;
+    transform: translateY(-6px);
+    transition: transform 600ms cubic-bezier(.3, .7, .4, 1);
+}
+
+.vote-btn:hover {
+    filter: brightness(110%);
+}
+
+.vote-btn:active .front {
+    transform: translateY(-2px);
+    transition: transform 34ms;
+}
+
+.vote-btn:active .shadow {
+    transform: translateY(1px);
+    transition: transform 34ms;
+}
+
+.vote-btn:focus:not(:focus-visible) {
+    outline: none;
+}
