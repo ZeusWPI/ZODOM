@@ -5,7 +5,54 @@
     <title>ZODOM</title>
 </head>
 <body>
+<h1>ZODOM</h1>
+
+<h2>Please Login to Vote</h2>
 <a href="/login">Login</a>
 </body>
-<!-- nathan is een cordon-blue -->
 </html>
+
+<style>
+    * {
+        --background-color: #fff;
+        --text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        * {
+            --background-color: #222;
+            --text-color: #fff;
+        }
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+
+    h1 {
+        font-size: 9em;
+        margin-bottom: 1rem;
+    }
+
+    h2 {
+        font-size: 3em;
+        margin-top: 0;
+    }
+
+    a {
+        text-decoration: none;
+        background-color: #ff7f00;
+        border-radius: 2rem;
+        padding: 3vw;
+        color: white;
+        font-size: 3em;
+    }
+</style>

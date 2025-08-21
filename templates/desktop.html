@@ -2,17 +2,20 @@
 <head>
     <link rel="stylesheet" href="/static/stylesheets/buttons.css" type="text/css">
     <title>ZODOM</title>
+    <meta charset="UTF-8">
 </head>
 <body>
 <header>
-    <div id="topbar">
+    <nav id="topbar">
         <div id="topbar-left">ZODOM</div>
         <div class="flex-spacer"></div>
         <div id="topbar-right">
             <span id="username">{{ username }}</span>
-            <img class="text-icon" src="/static/assets/logout.svg"/>
+            <a href="/logout">
+                <img class="text-icon" src="/static/assets/logout.svg"/>
+            </a>
         </div>
-    </div>
+    </nav>
 </header>
 
 <div id="main-body">
@@ -24,18 +27,22 @@
             <span class="song-title">No Time to Explain</span>
             <span class="song-artist">Good Kid</span>
         </div>
-        <button class="vote-btn good-btn">
-            <span class="shadow"></span>
-            <span class="edge"></span>
-            <span class="front">G
-            </span>
-        </button>
-        <button class="vote-btn bad-btn">
-            <span class="shadow"></span>
-            <span class="edge"></span>
-            <span class="front">B
-            </span>
-        </button>
+        <div class="button-div">
+            <button class="vote-btn good-btn">
+                <span class="shadow"></span>
+                <span class="edge"></span>
+                <div class="front">
+                    <img src="/static/assets/thumbs-up.svg" width="100%">
+                </div>
+            </button>
+            <button class="vote-btn bad-btn">
+                <span class="shadow"></span>
+                <span class="edge"></span>
+                <div class="front">
+                    <img src="/static/assets/thumbs-down.svg" width="100%">
+                </div>
+            </button>
+        </div>
     </div>
 
     <!-- Current Song-->
@@ -46,16 +53,22 @@
             <span class="song-title">Une vie à t'aimer</span>
             <span class="song-artist">Lorien Testard, Alice Duport-Percier, Victor Borba</span>
         </div>
-        <button class="vote-btn good-btn">
-            <span class="shadow"></span>
-            <span class="edge"></span>
-            <span class="front">G</span>
-        </button>
-        <button class="vote-btn bad-btn">
-            <span class="shadow"></span>
-            <span class="edge"></span>
-            <span class="front">B</span>
-        </button>
+        <div class="button-div">
+            <button class="vote-btn good-btn">
+                <span class="shadow"></span>
+                <span class="edge"></span>
+                <div class="front">
+                    <img src="/static/assets/thumbs-up.svg" width="100%">
+                </div>
+            </button>
+            <button class="vote-btn bad-btn">
+                <span class="shadow"></span>
+                <span class="edge"></span>
+                <div class="front">
+                    <img src="/static/assets/thumbs-down.svg" width="100%">
+                </div>
+            </button>
+        </div>
     </div>
 </div>
 </body>
@@ -97,27 +110,20 @@
     }
 
     body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-        width: 100vw;
-        height: 100vh;
         font-family: "Inter", sans-serif;
+        margin: 0;
     }
 
     #main-body {
         display: grid;
         grid-template-columns: 30% 60%;
         grid-column-gap: 5em;
+        grid-row-gap: 1em;
         width: 80vw;
         margin: auto;
     }
 
     #topbar {
-        position: absolute;
-        top: 0;
-        left: 0;
         width: 100vw;
         height: 5vh;
         display: flex;
@@ -127,6 +133,7 @@
         color: var(--clr-light-a0);
         font-weight: bolder;
         font-size: 1.5em;
+        margin-bottom: 2rem;
     }
 
     #topbar * {
@@ -185,25 +192,31 @@
     }
 
     .song-box {
-        background-color: #dddddd;
         border-radius: 2em;
         filter: drop-shadow(0.5em 0.5em 10px rgba(0, 0, 0, 0.4));
-        display: grid;
-        grid-template-columns: 66% 33%;
-        row-gap: 1em;
-        padding-top: 1.5em;
-        padding-bottom: 1.5em;
+        display: flex;
+        flex-direction: column;
+        padding-top: 30px;
+        padding-bottom: 30px;
         padding-right: 2%;
-        height: 80vh;
+        height: 75vh;
         margin-top: auto;
         margin-bottom: auto;
         grid-row: 2;
     }
 
+    .button-div {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        margin-top: 30px
+    }
+
     .song-cover {
-        width: 15vmin;
-        height: 15vmin;
-        border-radius: 2em;
+        width: 60%;
+        aspect-ratio: 1/1;
+        border-radius: 35px;
     }
 
     .song-title {
@@ -223,6 +236,14 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+    }
+
+    #current-song-box * .song-title {
+        font-size: 3em;
+    }
+
+    #current-song-box * .song-artist {
+        font-size: 1.5em;
     }
 
 
