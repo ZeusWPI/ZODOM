@@ -1,16 +1,26 @@
 <html lang="en-US">
 <head>
-    <link rel="stylesheet" href="stylesheets/buttons.css" type="text/css">
+    <link rel="stylesheet" href="/static/stylesheets/buttons.css" type="text/css">
     <title>ZODOM</title>
 </head>
 <body>
+<header>
+    <div id="topbar">
+        <div id="topbar-left">ZODOM</div>
+        <div class="flex-spacer"></div>
+        <div id="topbar-right">
+            <span id="username">{{ username }}</span>
+            <img class="text-icon" src="/static/assets/logout.svg"/>
+        </div>
+    </div>
+</header>
 
 <div id="main-body">
     <!-- Last Song -->
     <span class="songbox-label" id="last-song-label">Last Song</span>
     <div class="song-box" id="last-song-box">
         <div class="song-info">
-            <img src="../assets/placeholders/song_cover.jpg" class="song-cover">
+            <img src="/static/assets/placeholders/song_cover.jpg" class="song-cover">
             <span class="song-title">No Time to Explain</span>
             <span class="song-artist">Good Kid</span>
         </div>
@@ -32,7 +42,7 @@
     <span class="songbox-label" id="current-song-label">Current Song</span>
     <div class="song-box" id="current-song-box">
         <div class="song-info">
-            <img src="../assets/placeholders/song_cover_2.jpg" class="song-cover">
+            <img src="/static/assets/placeholders/song_cover_2.jpg" class="song-cover">
             <span class="song-title">Une vie à t'aimer</span>
             <span class="song-artist">Lorien Testard, Alice Duport-Percier, Victor Borba</span>
         </div>
@@ -54,6 +64,8 @@
 <style>
     html {
         text-rendering: optimizeLegibility;
+
+        /** Icons are from svgrepo wolf kit */
 
         /** Base colors */
         --clr-dark-a0: #000000;
@@ -100,6 +112,51 @@
         grid-column-gap: 5em;
         width: 80vw;
         margin: auto;
+    }
+
+    #topbar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 5vh;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        background-color: var(--clr-primary-a0);
+        color: var(--clr-light-a0);
+        font-weight: bolder;
+        font-size: 1.5em;
+    }
+
+    #topbar * {
+        display: flex;
+        align-items: center;
+    }
+
+    #topbar-left {
+        display: flex;
+        align-items: center;
+        margin-left: 2em;
+    }
+
+    #topbar-right {
+        display: flex;
+        align-items: center;
+        margin-right: 2em;
+    }
+
+    #username {
+        margin-right: 0.3em;
+    }
+
+    .flex-spacer {
+        flex-grow: 1;
+    }
+
+    .text-icon {
+        width: 1em;
+        aspect-ratio: 1 / 1;
     }
 
     .songbox-label {
