@@ -28,20 +28,28 @@
             <span class="song-artist">Good Kid</span>
         </div>
         <div class="button-div">
-            <button class="vote-btn good-btn">
-                <span class="shadow"></span>
-                <span class="edge"></span>
-                <div class="front">
-                    <img src="/static/assets/thumbs-up.svg" width="100%">
-                </div>
-            </button>
-            <button class="vote-btn bad-btn">
-                <span class="shadow"></span>
-                <span class="edge"></span>
-                <div class="front">
-                    <img src="/static/assets/thumbs-down.svg" width="100%">
-                </div>
-            </button>
+            <form method="post" action="/vote">
+                <input type="hidden" name="song_id" value="{{ last_song_id }}">
+                <input type="hidden" name="likes" value="true">
+                <button type="submit" class="vote-btn good-btn" formaction="vote">
+                    <span class="shadow"></span>
+                    <span class="edge"></span>
+                    <div class="front">
+                        <img src="/static/assets/thumbs-up.svg" width="100%">
+                    </div>
+                </button>
+            </form>
+            <form method="post" action="/vote">
+                <input type="hidden" name="song_id" value="{{ last_song_id }}">
+                <input type="hidden" name="likes" value="false">
+                <button class="vote-btn bad-btn" formaction="vote">
+                    <span class="shadow"></span>
+                    <span class="edge"></span>
+                    <div class="front">
+                        <img src="/static/assets/thumbs-down.svg" width="100%">
+                    </div>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -54,20 +62,28 @@
             <span class="song-artist">Lorien Testard, Alice Duport-Percier, Victor Borba</span>
         </div>
         <div class="button-div">
-            <button class="vote-btn good-btn">
-                <span class="shadow"></span>
-                <span class="edge"></span>
-                <div class="front">
-                    <img src="/static/assets/thumbs-up.svg" width="100%">
-                </div>
-            </button>
-            <button class="vote-btn bad-btn">
-                <span class="shadow"></span>
-                <span class="edge"></span>
-                <div class="front">
-                    <img src="/static/assets/thumbs-down.svg" width="100%">
-                </div>
-            </button>
+            <form method="post" action="/vote">
+                <input type="hidden" name="song_id" value="{{ current_song_id }}">
+                <input type="hidden" name="likes" value="true">
+                <button class="vote-btn good-btn" formaction="vote">
+                    <span class="shadow"></span>
+                    <span class="edge"></span>
+                    <div class="front">
+                        <img src="/static/assets/thumbs-up.svg" width="100%">
+                    </div>
+                </button>
+            </form>
+            <form method="post" action="/vote">
+                <input type="hidden" name="song_id" value="{{ current_song_id }}">
+                <input type="hidden" name="likes" value="false">
+                <button class="vote-btn bad-btn" formaction="vote">
+                    <span class="shadow"></span>
+                    <span class="edge"></span>
+                    <div class="front">
+                        <img src="/static/assets/thumbs-down.svg" width="100%">
+                    </div>
+                </button>
+            </form>
         </div>
     </div>
 </div>
