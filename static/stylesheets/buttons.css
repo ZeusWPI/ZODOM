@@ -25,6 +25,18 @@
     background: hsl(345deg 100% 47%);
 }
 
+.vote-btn:not([disabled]) * img {
+    filter: invert(100%);
+}
+
+.good-btn[disabled] * img {
+    filter: invert(83%) sepia(82%) saturate(651%) hue-rotate(29deg) brightness(90%) contrast(83%);
+}
+
+.bad-btn[disabled] * img {
+    filter: invert(12%) sepia(100%) saturate(5452%) hue-rotate(340deg) brightness(92%) contrast(106%);
+}
+
 .bad-btn .edge {
     background: linear-gradient(
             to left,
@@ -51,7 +63,7 @@
     touch-action: manipulation;
 }
 
-.vote-btn .shadow {
+.vote-btn:not([disabled]) .shadow {
     position: absolute;
     top: 0;
     left: 0;
@@ -64,7 +76,7 @@
     transition: transform 600ms cubic-bezier(.3, .7, .4, 1);
 }
 
-.vote-btn .edge {
+.vote-btn:not([disabled]) .edge {
     position: absolute;
     top: 0;
     left: 0;
@@ -96,16 +108,27 @@
     justify-content: center;
 }
 
-.vote-btn:hover {
+.vote-btn[disabled] .front {
+    background: transparent !important;
+    border-style: dashed;
+    border-width: 6px;
+    border-color: hsl(345deg 100% 47%);
+}
+
+.vote-btn[disabled].good-btn .front {
+    border-color: hsl(90, 71%, 49%) !important;
+}
+
+.vote-btn:hover:not([disabled]) {
     filter: brightness(110%);
 }
 
-.vote-btn:active .front {
+.vote-btn:active:not([disabled]) .front {
     transform: translateY(-2px);
     transition: transform 34ms;
 }
 
-.vote-btn:active .shadow {
+.vote-btn:active:not([disabled]) .shadow {
     transform: translateY(1px);
     transition: transform 34ms;
 }

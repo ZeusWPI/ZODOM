@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en-US">
 <head>
     <link rel="stylesheet" href="/static/stylesheets/buttons.css" type="text/css">
@@ -24,30 +25,38 @@
     <div class="song-box" id="last-song-box">
         <div class="song-info">
             <img src="/static/assets/placeholders/song_cover.jpg" class="song-cover">
-            <span class="song-title">No Time to Explain</span>
-            <span class="song-artist">Good Kid</span>
+            <span class="song-title">{{ last_song_title }}</span>
+            <span class="song-artist">{{ last_song_artist }}</span>
         </div>
         <div class="button-div">
             <form method="post" action="/vote">
                 <input type="hidden" name="song_id" value="{{ last_song_id }}">
                 <input type="hidden" name="likes" value="true">
-                <button type="submit" class="vote-btn good-btn" formaction="vote">
+                <button type="submit"
+                        class="vote-btn good-btn"
+                        formaction="vote"
+                        {% if last_song_vote.is_some() && last_song_vote.unwrap()== true %}disabled{% endif %}
+                >
                     <span class="shadow"></span>
                     <span class="edge"></span>
-                    <div class="front">
+                    <span class="front">
                         <img src="/static/assets/thumbs-up.svg" width="100%">
-                    </div>
+                    </span>
                 </button>
             </form>
             <form method="post" action="/vote">
                 <input type="hidden" name="song_id" value="{{ last_song_id }}">
                 <input type="hidden" name="likes" value="false">
-                <button class="vote-btn bad-btn" formaction="vote">
+                <button
+                        class="vote-btn bad-btn"
+                        formaction="vote"
+                        {% if last_song_vote.is_some() && last_song_vote.unwrap() == false %}disabled{% endif %}
+                        >
                     <span class="shadow"></span>
                     <span class="edge"></span>
-                    <div class="front">
+                    <span class="front">
                         <img src="/static/assets/thumbs-down.svg" width="100%">
-                    </div>
+                    </span>
                 </button>
             </form>
         </div>
@@ -58,30 +67,38 @@
     <div class="song-box" id="current-song-box">
         <div class="song-info">
             <img src="/static/assets/placeholders/song_cover_2.jpg" class="song-cover">
-            <span class="song-title">Une vie à t'aimer</span>
-            <span class="song-artist">Lorien Testard, Alice Duport-Percier, Victor Borba</span>
+            <span class="song-title">{{ current_song_title }}</span>
+            <span class="song-artist">{{ current_song_artist }}</span>
         </div>
         <div class="button-div">
             <form method="post" action="/vote">
                 <input type="hidden" name="song_id" value="{{ current_song_id }}">
                 <input type="hidden" name="likes" value="true">
-                <button class="vote-btn good-btn" formaction="vote">
+                <button class="vote-btn good-btn"
+                        formaction="vote"
+                        {% if current_song_vote.is_some() && current_song_vote.unwrap() == true %}disabled{% endif %}
+                        >
                     <span class="shadow"></span>
                     <span class="edge"></span>
-                    <div class="front">
+                    <span class="front">
                         <img src="/static/assets/thumbs-up.svg" width="100%">
-                    </div>
+                    </span>
                 </button>
             </form>
             <form method="post" action="/vote">
                 <input type="hidden" name="song_id" value="{{ current_song_id }}">
                 <input type="hidden" name="likes" value="false">
-                <button class="vote-btn bad-btn" formaction="vote">
+                <button class="vote-btn bad-btn"
+                        formaction="vote"
+                        {% if current_song_vote.is_some() && current_song_vote.unwrap() == false %}
+                        disabled
+                        {% endif %}
+                        >
                     <span class="shadow"></span>
                     <span class="edge"></span>
-                    <div class="front">
+                    <span class="front">
                         <img src="/static/assets/thumbs-down.svg" width="100%">
-                    </div>
+                    </span>
                 </button>
             </form>
         </div>
@@ -94,7 +111,7 @@
     html {
         text-rendering: optimizeLegibility;
 
-        /** Icons are from svgrepo wolf kit */
+        /** Icons are from svg-repo wolf kit */
 
         /** Base colors */
         --clr-dark-a0: #000000;
@@ -209,7 +226,6 @@
 
     .song-box {
         border-radius: 2em;
-        filter: drop-shadow(0.5em 0.5em 10px rgba(0, 0, 0, 0.4));
         display: flex;
         flex-direction: column;
         padding-top: 30px;
@@ -233,6 +249,7 @@
         width: 60%;
         aspect-ratio: 1/1;
         border-radius: 35px;
+        filter: drop-shadow(0.5em 0.5em 10px rgba(0, 0, 0, 0.4));
     }
 
     .song-title {

@@ -31,7 +31,7 @@ struct VoteSubmission {
 }
 
 #[derive(Template)]
-#[template(path = "desktop.html")]
+#[template(path = "desktop.askama")]
 struct DesktopTemplate<'a> {
     current_song_id: &'a str,
     current_song_title: &'a str,
