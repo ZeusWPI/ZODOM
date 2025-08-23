@@ -22,6 +22,7 @@ struct AppState {
     current_song: Arc<Mutex<SongInfo>>,
     last_song: Arc<Mutex<SongInfo>>,
     db: SqlitePool,
+    mqtt_client: paho_mqtt::Client,
 }
 
 #[derive(Deserialize)]
@@ -64,6 +65,7 @@ async fn main() {
             cover_image: String::from("/static/assets/placeholders/song_cover.jpg"),
         })),
         db: SqlitePool::connect("sqlite:test.db").await.unwrap(),
+        mqtt_client: songs::init_client(),
     };
 
     let static_files = ServeDir::new("./static/");
@@ -75,7 +77,8 @@ async fn main() {
         .route("/login", get(auth::login))
         .route("/oauth/callback", get(auth::callback))
         .route("/logout", get(auth::logout))
-        .route("/vote", post(submit_vote))
+        .route("/submit_vote", post(submit_vote))
+        .route("/vote_count", get(get_vote_count))
         .layer(session_layer)
         .nest_service("/static", static_files)
         .with_state(app_state);
@@ -85,8 +88,9 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-#[debug_handler]
 async fn index(session: Session, State(state): State<AppState>) -> impl IntoResponse {
+    let debug_vote_count = db::get_vote_count(&state.db, "3LQY0O87BlaOKMp56ST4hC").await;
+    println!("Une vie à t'aimer vote count: {} For, {} Against", debug_vote_count.votes_for, debug_vote_count.votes_against);
     let user = session.get::<ZauthUser>("user").await.unwrap();
     if user.is_none() {
         return login().into_response();
@@ -128,8 +132,21 @@ async fn submit_vote(
     match session.get::<ZauthUser>("user").await.unwrap() {
         None => Redirect::to("/"),
         Some(user) => {
-            db::add_vote(state.db, user.id, payload.likes, &*payload.song_id).await;
+            db::add_vote(&state.db, user.id, payload.likes, &*payload.song_id).await;
+            //TODO Re-enable after changing song is implemented
+            // songs::publish_vote_update(state.mqtt_client, db::get_vote_count(&state.db, &*payload.song_id).await);
             Redirect::to("/")
         }
     }
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct VoteCountRequest {
+    song_id: String,
+}
+
+#[debug_handler]
+async fn get_vote_count(State(state): State<AppState>, Json(payload): Json<VoteCountRequest>) -> impl IntoResponse {
+    Json(db::get_vote_count(&state.db, &payload.song_id).await)
 }
