@@ -2,6 +2,7 @@
 <html lang="en-US">
 <head>
     <link rel="stylesheet" href="/static/stylesheets/buttons.css" type="text/css">
+    <link rel="stylesheet" href="/static/stylesheets/desktop.css" type="text/css">
     <title>ZODOM</title>
     <meta charset="UTF-8">
 </head>
@@ -13,7 +14,7 @@
         <div id="topbar-right">
             <span id="username">{{ username }}</span>
             <a href="/logout">
-                <img class="text-icon" src="/static/assets/logout.svg"/>
+                <img class="text-icon" src="/static/assets/logout.svg" alt="Logout Icon"/>
             </a>
         </div>
     </nav>
@@ -39,7 +40,7 @@
                     <span class="shadow"></span>
                     <span class="edge"></span>
                     <span class="front">
-                        <img src="/static/assets/thumbs-up.svg" width="100%">
+                        <img src="/static/assets/thumbs-up.svg" width="100%" alt="Good Song Icon">
                     </span>
                 </button>
             </form>
@@ -53,7 +54,7 @@
                     <span class="shadow"></span>
                     <span class="edge"></span>
                     <span class="front">
-                        <img src="/static/assets/thumbs-down.svg" width="100%">
+                        <img src="/static/assets/thumbs-down.svg" width="100%" alt="Bad Song Icon">
                     </span>
                 </button>
             </form>
@@ -78,7 +79,7 @@
                     <span class="shadow"></span>
                     <span class="edge"></span>
                     <span class="front">
-                        <img src="/static/assets/thumbs-up.svg" width="100%">
+                        <img src="/static/assets/thumbs-up.svg" width="100%" alt="Good Song Icon">
                     </span>
                 </button>
             </form>
@@ -93,7 +94,7 @@
                     <span class="shadow"></span>
                     <span class="edge"></span>
                     <span class="front">
-                        <img src="/static/assets/thumbs-down.svg" width="100%">
+                        <img src="/static/assets/thumbs-down.svg" width="100%" alt="Bad Song Icon">
                     </span>
                 </button>
             </form>
@@ -106,177 +107,3 @@ const currentSongId = "{{ current_song_id }}";
 </script>
 <script src="/static/reload_on_songchange.js"></script>
 </html>
-<style>
-    html {
-        text-rendering: optimizeLegibility;
-
-        /** Icons are from svg-repo wolf kit */
-
-        /** Base colors */
-        --clr-dark-a0: #000000;
-        --clr-light-a0: #ffffff;
-
-        /** Theme primary colors */
-        --clr-primary-a0: #ff8000;
-        --clr-primary-a10: #f28120;
-        --clr-primary-a20: #e68231;
-        --clr-primary-a30: #d9823f;
-        --clr-primary-a40: #cb824b;
-        --clr-primary-a50: #be8256;
-
-        /** Theme surface colors */
-        --clr-surface-a0: #ffffff;
-        --clr-surface-a10: #f0f0f0;
-        --clr-surface-a20: #e1e1e1;
-        --clr-surface-a30: #d3d3d3;
-        --clr-surface-a40: #c5c5c5;
-        --clr-surface-a50: #b6b6b6;
-
-        /** Theme tonal surface colors */
-        --clr-surface-tonal-a0: #fff2e7;
-        --clr-surface-tonal-a10: #f0e5db;
-        --clr-surface-tonal-a20: #e1d8cf;
-        --clr-surface-tonal-a30: #d3cbc3;
-        --clr-surface-tonal-a40: #c5beb8;
-        --clr-surface-tonal-a50: #b7b1ac;
-    }
-
-    body {
-        font-family: "Inter", sans-serif;
-        margin: 0;
-    }
-
-    #main-body {
-        display: grid;
-        grid-template-columns: 30% 60%;
-        grid-column-gap: 5em;
-        grid-row-gap: 1em;
-        width: 80vw;
-        margin: auto;
-    }
-
-    #topbar {
-        width: 100vw;
-        height: 5vh;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        background-color: var(--clr-primary-a0);
-        color: var(--clr-light-a0);
-        font-weight: bolder;
-        font-size: 1.5em;
-        margin-bottom: 2rem;
-    }
-
-    #topbar * {
-        display: flex;
-        align-items: center;
-    }
-
-    #topbar-left {
-        display: flex;
-        align-items: center;
-        margin-left: 2em;
-    }
-
-    #topbar-right {
-        display: flex;
-        align-items: center;
-        margin-right: 2em;
-    }
-
-    #username {
-        margin-right: 0.3em;
-    }
-
-    .flex-spacer {
-        flex-grow: 1;
-    }
-
-    .text-icon {
-        width: 1em;
-        aspect-ratio: 1 / 1;
-    }
-
-    .songbox-label {
-        grid-row: 1;
-        text-align: center;
-        font-weight: bolder;
-        font-size: 2em;
-    }
-
-    #last-song-label {
-        grid-column: 1;
-    }
-
-    #current-song-label {
-        grid-column: 2;
-    }
-
-    #last-song-box {
-        width: 100%;
-        grid-column: 1;
-    }
-
-    #current-song-box {
-        width: 100%;
-        grid-column: 2;
-    }
-
-    .song-box {
-        border-radius: 2em;
-        display: flex;
-        flex-direction: column;
-        padding-top: 30px;
-        padding-bottom: 30px;
-        padding-right: 2%;
-        height: 75vh;
-        margin-top: auto;
-        margin-bottom: auto;
-        grid-row: 2;
-    }
-
-    .button-div {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        margin-top: 30px
-    }
-
-    .song-cover {
-        width: 60%;
-        aspect-ratio: 1/1;
-        border-radius: 35px;
-        filter: drop-shadow(0.5em 0.5em 10px rgba(0, 0, 0, 0.4));
-    }
-
-    .song-title {
-        margin-top: 0.5em;
-        margin-bottom: 0.25em;
-        font-size: 1.5em;
-        font-weight: bold;
-        text-align: center;
-    }
-
-    .song-artist {
-        font-size: 1em;
-    }
-
-    .song-info {
-        grid-row: 1 / 3;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    #current-song-box * .song-title {
-        font-size: 3em;
-    }
-
-    #current-song-box * .song-artist {
-        font-size: 1.5em;
-    }
-
-
-</style>

@@ -110,12 +110,16 @@
 
 .vote-btn[disabled] .front {
     background: transparent !important;
+}
+
+.vote-btn[disabled] {
     border-style: dashed;
     border-width: 6px;
     border-color: hsl(345deg 100% 47%);
+    border-radius: 25px;
 }
 
-.vote-btn[disabled].good-btn .front {
+.vote-btn[disabled].good-btn {
     border-color: hsl(90, 71%, 49%) !important;
 }
 

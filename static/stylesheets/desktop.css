@@ -1,0 +1,145 @@
+html {
+    text-rendering: optimizeLegibility;
+    /** Icons are from svg-repo wolf kit */
+    --clr-dark: #000000;
+    --clr-light: #ffffff;
+    --clr-primary: #ff8000;
+}
+
+body {
+    font-family: "Inter", sans-serif;
+    margin: 0;
+}
+
+#main-body {
+    display: grid;
+    grid-template-columns: 30% 60%;
+    grid-column-gap: 5em;
+    grid-row-gap: 1em;
+    width: 80vw;
+    margin: auto;
+}
+
+#topbar {
+    width: 100vw;
+    height: 5vh;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: var(--clr-primary);
+    color: var(--clr-light);
+    font-weight: bolder;
+    font-size: 2vh;
+    margin-bottom: 2rem;
+}
+
+#topbar * {
+    display: flex;
+    align-items: center;
+}
+
+#topbar-left {
+    display: flex;
+    align-items: center;
+    margin-left: 2em;
+}
+
+#topbar-right {
+    display: flex;
+    align-items: center;
+    margin-right: 2em;
+}
+
+#username {
+    margin-right: 0.6em;
+}
+
+.flex-spacer {
+    flex-grow: 1;
+}
+
+.text-icon {
+    width: 1em;
+    aspect-ratio: 1 / 1;
+}
+
+.songbox-label {
+    grid-row: 1;
+    text-align: center;
+    font-weight: bolder;
+    font-size: 2em;
+}
+
+#last-song-label {
+    grid-column: 1;
+}
+
+#current-song-label {
+    grid-column: 2;
+}
+
+#last-song-box {
+    width: 100%;
+    grid-column: 1;
+}
+
+#current-song-box {
+    width: 100%;
+    grid-column: 2;
+}
+
+.song-box {
+    border-radius: 2em;
+    display: flex;
+    flex-direction: column;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    padding-right: 2%;
+    height: 75vh;
+    margin-top: auto;
+    margin-bottom: auto;
+    grid-row: 2;
+}
+
+.button-div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-top: 30px
+}
+
+.song-cover {
+    width: 60%;
+    aspect-ratio: 1/1;
+    border-radius: 35px;
+    filter: drop-shadow(0.5em 0.5em 10px rgba(0, 0, 0, 0.4));
+}
+
+.song-title {
+    margin-top: 0.5em;
+    margin-bottom: 0.25em;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.song-artist {
+    font-size: 1em;
+}
+
+.song-info {
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#current-song-box * .song-title {
+    font-size: 3em;
+}
+
+#current-song-box * .song-artist {
+    font-size: 1.5em;
+}
+
