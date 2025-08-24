@@ -1,11 +1,10 @@
-use std::{env, process, thread};
-use std::sync::{Arc, LazyLock};
-use std::time::Duration;
-use axum::Json;
+use crate::db::VoteCount;
 use paho_mqtt::{ConnectOptionsBuilder, CreateOptionsBuilder, Message, QoS, QOS_2};
 use serde::Deserialize;
+use std::sync::{Arc, LazyLock};
+use std::time::Duration;
+use std::{env, process, thread};
 use tokio::sync::Mutex;
-use crate::db::VoteCount;
 
 static MQTT_HOST: LazyLock<String> =
     LazyLock::new(|| env::var("MQTT_HOST").expect("MQTT_HOST not present"));

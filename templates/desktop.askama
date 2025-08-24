@@ -101,7 +101,10 @@
     </div>
 </div>
 </body>
-
+<script>
+const currentSongId = "{{ current_song_id }}";
+</script>
+<script src="/static/reload_on_songchange.js"></script>
 </html>
 <style>
     html {

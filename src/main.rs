@@ -8,13 +8,14 @@ use askama::Template;
 use axum::extract::State;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::routing::post;
-use axum::{Form, Json, Router, debug_handler, routing::get};
+use axum::{debug_handler, routing::get, Form, Json, Router};
+use futures_util::stream::Stream;
 use serde::Deserialize;
-use sqlx::{SqlitePool};
+use sqlx::SqlitePool;
 use std::sync::Arc;
-use tokio::sync::{Mutex};
+use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
-use tower_sessions::{Session, SessionManagerLayer, cookie::SameSite};
+use tower_sessions::{cookie::SameSite, Session, SessionManagerLayer};
 use tower_sessions_file_store::FileSessionStorage;
 
 #[derive(Clone)]
@@ -83,6 +84,7 @@ async fn main() {
         .route("/logout", get(auth::logout))
         .route("/submit_vote", post(submit_vote))
         .route("/vote_count", get(get_vote_count))
+        .route("/current_song", get(get_current_song_or_paused))
         .layer(session_layer)
         .nest_service("/static", static_files)
         .with_state(app_state);
@@ -140,7 +142,6 @@ async fn submit_vote(
         None => Redirect::to("/"),
         Some(user) => {
             db::add_vote(&state.db, user.id, payload.likes, &*payload.song_id).await;
-            //TODO Re-enable after changing song is implemented
             songs::publish_vote_update(&state.mqtt_client, db::get_vote_count(&state.db, &*payload.song_id).await);
             Redirect::to("/")
         }
@@ -156,4 +157,8 @@ struct VoteCountRequest {
 #[debug_handler]
 async fn get_vote_count(State(state): State<AppState>, Json(payload): Json<VoteCountRequest>) -> impl IntoResponse {
     Json(db::get_vote_count(&state.db, &payload.song_id).await)
+}
+
+async fn get_current_song_or_paused(State(state): State<AppState>) -> impl IntoResponse {
+    Json(state.current_song.lock().await.song_id.clone())
 }
