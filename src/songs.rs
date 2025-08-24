@@ -1,8 +1,7 @@
-use std::{env, process};
-use std::sync::LazyLock;
+use std::{env, process, thread};
+use std::sync::{Arc, LazyLock};
 use std::time::Duration;
-use axum::Json;
-use paho_mqtt::{ConnectOptionsBuilder, CreateOptionsBuilder, Message, QoS};
+use paho_mqtt::{ConnectOptionsBuilder, CreateOptionsBuilder, Message, QoS, QOS_2};
 use crate::db::VoteCount;
 
 static MQTT_HOST: LazyLock<String> =
@@ -15,6 +14,19 @@ pub struct SongInfo {
     pub(crate) song_id: String,
 }
 
+fn try_reconnect(cli: &paho_mqtt::Client) -> bool
+{
+    println!("Connection lost. Waiting to retry connection");
+    for _ in 0..12 {
+        thread::sleep(Duration::from_millis(5000));
+        if cli.reconnect().is_ok() {
+            println!("Successfully reconnected");
+            return true;
+        }
+    }
+    println!("Unable to reconnect after several attempts.");
+    false
+}
 
 pub fn init_client() -> paho_mqtt::Client {
     let create_opts = CreateOptionsBuilder::new()
@@ -40,7 +52,31 @@ pub fn init_client() -> paho_mqtt::Client {
     cli
 }
 
-pub(crate) fn publish_vote_update(client: paho_mqtt::Client, vote_count: VoteCount) {
+fn listen(client: Arc<paho_mqtt::Client>) {
+    subscribe_topics(&client);
+    let queue = client.start_consuming();
+    println!("Started Listening");
+    for msg in queue.iter() {
+        if let Some(msg) = msg {
+            println!("{}", msg);
+        } else if !client.is_connected() {
+            if try_reconnect(&client) {
+                subscribe_topics(&client)
+            }
+        }
+    }
+}
+
+fn subscribe_topics(client: &paho_mqtt::Client) {
+    let topics = &["music/pause", "music/play"];
+    client.subscribe_many(topics, &[QOS_2, QOS_2]).unwrap();
+}
+
+pub fn start_listening(client: Arc<paho_mqtt::Client>) {
+    thread::spawn(|| { listen(client); });
+}
+
+pub fn publish_vote_update(client: &paho_mqtt::Client, vote_count: VoteCount) {
     let msg = Message::new(
         "music/votes",
         serde_json::to_string(&vote_count).unwrap(),
@@ -48,3 +84,4 @@ pub(crate) fn publish_vote_update(client: paho_mqtt::Client, vote_count: VoteCou
     );
     client.publish(msg).unwrap();
 }
+

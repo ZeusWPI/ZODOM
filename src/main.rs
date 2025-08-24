@@ -10,9 +10,9 @@ use axum::response::{Html, IntoResponse, Redirect};
 use axum::routing::post;
 use axum::{Form, Json, Router, debug_handler, routing::get};
 use serde::Deserialize;
-use sqlx::{SqliteConnection, SqlitePool};
+use sqlx::{SqlitePool};
 use std::sync::Arc;
-use tokio::sync::{Mutex, MutexGuard};
+use tokio::sync::{Mutex};
 use tower_http::services::ServeDir;
 use tower_sessions::{Session, SessionManagerLayer, cookie::SameSite};
 use tower_sessions_file_store::FileSessionStorage;
@@ -22,7 +22,7 @@ struct AppState {
     current_song: Arc<Mutex<SongInfo>>,
     last_song: Arc<Mutex<SongInfo>>,
     db: SqlitePool,
-    mqtt_client: paho_mqtt::Client,
+    mqtt_client: Arc<paho_mqtt::Client>,
 }
 
 #[derive(Deserialize)]
@@ -65,8 +65,10 @@ async fn main() {
             cover_image: String::from("/static/assets/placeholders/song_cover.jpg"),
         })),
         db: SqlitePool::connect("sqlite:test.db").await.unwrap(),
-        mqtt_client: songs::init_client(),
+        mqtt_client: Arc::new(songs::init_client()),
     };
+
+    songs::start_listening(Arc::clone(&app_state.mqtt_client));
 
     let static_files = ServeDir::new("./static/");
     let session_store = FileSessionStorage::new();
@@ -89,6 +91,7 @@ async fn main() {
 }
 
 async fn index(session: Session, State(state): State<AppState>) -> impl IntoResponse {
+    // TODO: Remove Debug Statement
     let debug_vote_count = db::get_vote_count(&state.db, "3LQY0O87BlaOKMp56ST4hC").await;
     println!("Une vie à t'aimer vote count: {} For, {} Against", debug_vote_count.votes_for, debug_vote_count.votes_against);
     let user = session.get::<ZauthUser>("user").await.unwrap();
@@ -113,7 +116,7 @@ async fn index(session: Session, State(state): State<AppState>) -> impl IntoResp
             current_song_vote,
             last_song_vote,
         };
-        return Html(desk_template.render().unwrap()).into_response();
+        Html(desk_template.render().unwrap()).into_response()
     } else {
         panic!("Should Never Happen")
     }
@@ -134,7 +137,7 @@ async fn submit_vote(
         Some(user) => {
             db::add_vote(&state.db, user.id, payload.likes, &*payload.song_id).await;
             //TODO Re-enable after changing song is implemented
-            // songs::publish_vote_update(state.mqtt_client, db::get_vote_count(&state.db, &*payload.song_id).await);
+            songs::publish_vote_update(&state.mqtt_client, db::get_vote_count(&state.db, &*payload.song_id).await);
             Redirect::to("/")
         }
     }
