@@ -24,7 +24,7 @@
     <span class="songbox-label" id="last-song-label">Last Song</span>
     <div class="song-box" id="last-song-box">
         <div class="song-info">
-            <img src="/static/assets/placeholders/song_cover.jpg" class="song-cover">
+            <img src="{{ last_song_cover }}" class="song-cover" alt="Last Song Cover">
             <span class="song-title">{{ last_song_title }}</span>
             <span class="song-artist">{{ last_song_artist }}</span>
         </div>
@@ -64,7 +64,7 @@
     <span class="songbox-label" id="current-song-label">Current Song</span>
     <div class="song-box" id="current-song-box">
         <div class="song-info">
-            <img src="/static/assets/placeholders/song_cover_2.jpg" class="song-cover">
+            <img src="{{ current_song_cover }}" class="song-cover" alt="Current Song Cover">
             <span class="song-title">{{ current_song_title }}</span>
             <span class="song-artist">{{ current_song_artist }}</span>
         </div>

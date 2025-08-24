@@ -37,9 +37,11 @@ struct DesktopTemplate<'a> {
     current_song_id: &'a str,
     current_song_title: &'a str,
     current_song_artist: &'a str,
+    current_song_cover: &'a str,
     last_song_id: &'a str,
     last_song_title: &'a str,
     last_song_artist: &'a str,
+    last_song_cover: &'a str,
     username: &'a str,
     current_song_vote: Option<bool>,
     last_song_vote: Option<bool>,
@@ -68,7 +70,7 @@ async fn main() {
         mqtt_client: Arc::new(songs::init_client()),
     };
 
-    songs::start_listening(Arc::clone(&app_state.mqtt_client));
+    songs::start_listening(Arc::clone(&app_state.mqtt_client), Arc::clone(&app_state.last_song), Arc::clone(&app_state.current_song));
 
     let static_files = ServeDir::new("./static/");
     let session_store = FileSessionStorage::new();
@@ -110,9 +112,11 @@ async fn index(session: Session, State(state): State<AppState>) -> impl IntoResp
             current_song_title: &*current_song.title,
             current_song_artist: &*current_song.artist,
             current_song_id: &*current_song.song_id,
+            current_song_cover: &*current_song.cover_image,
             last_song_id: &*last_song.song_id,
             last_song_title: &*last_song.title,
             last_song_artist: &*last_song.artist,
+            last_song_cover: &*last_song.cover_image,
             current_song_vote,
             last_song_vote,
         };
