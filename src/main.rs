@@ -8,8 +8,7 @@ use askama::Template;
 use axum::extract::State;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::routing::post;
-use axum::{debug_handler, routing::get, Form, Json, Router};
-use futures_util::stream::Stream;
+use axum::{routing::get, Form, Json, Router};
 use serde::Deserialize;
 use sqlx::SqlitePool;
 use std::sync::Arc;
@@ -154,7 +153,6 @@ struct VoteCountRequest {
     song_id: String,
 }
 
-#[debug_handler]
 async fn get_vote_count(State(state): State<AppState>, Json(payload): Json<VoteCountRequest>) -> impl IntoResponse {
     Json(db::get_vote_count(&state.db, &payload.song_id).await)
 }
