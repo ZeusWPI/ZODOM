@@ -64,6 +64,11 @@ body {
     margin-right: 2em;
 }
 
+#zodom-icon {
+    height: 1.6em;
+    filter: invert(100%);
+}
+
 #user-img {
     aspect-ratio: 1/1;
     height: 1em;

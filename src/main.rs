@@ -91,9 +91,6 @@ async fn main() {
 }
 
 async fn index(session: Session, State(state): State<AppState>) -> impl IntoResponse {
-    // TODO: Remove Debug Statement
-    let debug_vote_count = db::get_vote_count(&state.db, "3LQY0O87BlaOKMp56ST4hC").await;
-    println!("Une vie à t'aimer vote count: {} For, {} Against", debug_vote_count.votes_for, debug_vote_count.votes_against);
     let user = session.get::<ZauthUser>("user").await.unwrap();
     if user.is_none() {
         return login().into_response();

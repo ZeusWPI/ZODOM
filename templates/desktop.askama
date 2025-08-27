@@ -4,12 +4,16 @@
     <link rel="stylesheet" href="/static/stylesheets/buttons2.css" type="text/css">
     <link rel="stylesheet" href="/static/stylesheets/desktop.css" type="text/css">
     <title>ZODOM</title>
+    <link rel="icon" href="/static/assets/zodom-icon-with-background.svg">
     <meta charset="UTF-8">
 </head>
 <body>
 <header>
     <nav id="topbar">
-        <div id="topbar-left">ZODOM</div>
+        <div id="topbar-left">
+        <img id="zodom-icon" src="/static/assets/zodom-icon.svg" alt="ZODOM Logo"/>
+        <span>ZODOM</span>
+        </div>
         <div class="flex-spacer"></div>
         <div id="topbar-right">
         <img id="user-img" src="https://zpi.zeus.gent/image/{{ user.id }}?placeholder=true" alt="">

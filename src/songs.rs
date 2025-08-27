@@ -31,8 +31,14 @@ pub struct SongInfo {
 struct GuitarSongInfo {
     name: String,
     spotify_id: String,
+    #[serde(default = "default_cover")]
     image_url: String,
     artists: Vec<String>,
+}
+
+fn default_cover() -> String {
+    //TODO Get Actual Default Cover
+    String::from("https://zpi.zeus.gent/image/385")
 }
 
 fn try_reconnect(cli: &paho_mqtt::Client) -> bool
