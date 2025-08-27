@@ -12,6 +12,7 @@ use axum::{routing::get, Form, Json, Router};
 use serde::Deserialize;
 use sqlx::SqlitePool;
 use std::sync::Arc;
+use std::time::UNIX_EPOCH;
 use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
 use tower_sessions::{cookie::SameSite, Session, SessionManagerLayer};
@@ -34,15 +35,9 @@ struct VoteSubmission {
 #[derive(Template)]
 #[template(path = "desktop.askama")]
 struct DesktopTemplate<'a> {
-    current_song_id: &'a str,
-    current_song_title: &'a str,
-    current_song_artist: &'a str,
-    current_song_cover: &'a str,
-    last_song_id: &'a str,
-    last_song_title: &'a str,
-    last_song_artist: &'a str,
-    last_song_cover: &'a str,
-    username: &'a str,
+    current_song: &'a SongInfo,
+    last_song: &'a SongInfo,
+    user: &'a ZauthUser,
     current_song_vote: Option<bool>,
     last_song_vote: Option<bool>,
 }
@@ -58,13 +53,15 @@ async fn main() {
             song_id: String::from("3LQY0O87BlaOKMp56ST4hC"),
             title: String::from("Une vie à t'aimer"),
             artist: String::from("Lorien Testard, Alice Duport-Percier, Victor Borba"),
-            cover_image: String::from("/static/assets/placeholders/song_cover_2.jpg"),
+            cover_img: String::from("/static/assets/placeholders/song_cover_2.jpg"),
+            paused_on: UNIX_EPOCH,
         })),
         last_song: Arc::new(Mutex::new(SongInfo {
             song_id: String::from("4QEXM9na0mWIIt5Hwbsges"),
             title: String::from("No Time to Explain"),
             artist: String::from("Good Kid"),
-            cover_image: String::from("/static/assets/placeholders/song_cover.jpg"),
+            cover_img: String::from("/static/assets/placeholders/song_cover.jpg"),
+            paused_on: UNIX_EPOCH,
         })),
         db: SqlitePool::connect("sqlite:test.db").await.unwrap(),
         mqtt_client: Arc::new(songs::init_client()),
@@ -109,15 +106,9 @@ async fn index(session: Session, State(state): State<AppState>) -> impl IntoResp
         let last_song_vote = db::get_vote(&state.db, user.id, &*last_song.song_id).await;
 
         let desk_template = DesktopTemplate {
-            username: &*user.username,
-            current_song_title: &*current_song.title,
-            current_song_artist: &*current_song.artist,
-            current_song_id: &*current_song.song_id,
-            current_song_cover: &*current_song.cover_image,
-            last_song_id: &*last_song.song_id,
-            last_song_title: &*last_song.title,
-            last_song_artist: &*last_song.artist,
-            last_song_cover: &*last_song.cover_image,
+            user: &user,
+            current_song: &*current_song,
+            last_song: &*last_song,
             current_song_vote,
             last_song_vote,
         };

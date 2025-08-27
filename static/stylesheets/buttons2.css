@@ -1,0 +1,155 @@
+.button-div {
+    column-gap: 15px;
+}
+
+
+.good-btn {
+    grid-row: 1;
+}
+
+.good-btn .front {
+    background: hsl(90, 71%, 49%) !important;
+}
+
+.good-btn .edge {
+    background: linear-gradient(
+            to left,
+            hsl(90deg 100% 16%) 0%,
+            hsl(90deg 100% 32%) 8%,
+            hsl(90deg 100% 32%) 92%,
+            hsl(90deg 100% 16%) 100%
+    ) !important;
+}
+
+.bad-btn {
+    grid-row: 2;
+}
+
+.bad-btn .front {
+    background: hsl(345deg 100% 47%);
+}
+
+.vote-btn * img {
+    filter: invert(100%);
+}
+
+.bad-btn .edge {
+    background: linear-gradient(
+            to left,
+            hsl(340deg 100% 16%) 0%,
+            hsl(340deg 100% 32%) 8%,
+            hsl(340deg 100% 32%) 92%,
+            hsl(340deg 100% 16%) 100%
+    ) !important;
+}
+
+.vote-btn {
+    width: 100px;
+    height: 100px;
+    grid-column: 2;
+
+    position: relative;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    outline-offset: 4px;
+    transition: filter 250ms;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.btn-form {
+    width: 124px;
+    height: 124px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.vote-btn:not([disabled]) .shadow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 25px;
+    background: hsl(0deg 0% 0% / 0.25);
+    will-change: transform;
+    transform: translateY(4px);
+    transition: transform 600ms cubic-bezier(.3, .7, .4, 1);
+}
+
+.vote-btn:not([disabled]) .edge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 25px;
+    background: linear-gradient(
+            to left,
+            hsl(340deg 100% 16%) 0%,
+            hsl(340deg 100% 32%) 8%,
+            hsl(340deg 100% 32%) 92%,
+            hsl(340deg 100% 16%) 100%
+    );
+}
+
+.vote-btn .front {
+    display: flex;
+    position: relative;
+    padding: 12px 27px;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    color: white;
+    background: hsl(345deg 100% 47%);
+    height: 80%;
+    will-change: transform;
+    transform: translateY(-6px);
+    transition: transform 600ms cubic-bezier(.3, .7, .4, 1);
+    align-items: center;
+    justify-content: center;
+}
+
+.vote-btn[disabled] .front {
+    transform: none !important;
+}
+
+.vote-btn[disabled] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    border-style: solid;
+    border-width: 6px;
+    border-radius: 31px;
+    border-color: hsl(345deg 100% 47%);
+
+    width: 124px;
+    height: 124px;
+    padding: 6px;
+}
+
+.vote-btn[disabled].good-btn {
+    border-color: hsl(90, 71%, 49%) !important;
+}
+
+.vote-btn:hover:not([disabled]) {
+    filter: brightness(110%);
+}
+
+.vote-btn:active:not([disabled]) .front {
+    transform: translateY(-2px);
+    transition: transform 34ms;
+}
+
+.vote-btn:active:not([disabled]) .shadow {
+    transform: translateY(1px);
+    transition: transform 34ms;
+}
+
+.vote-btn:focus:not(:focus-visible) {
+    outline: none;
+}

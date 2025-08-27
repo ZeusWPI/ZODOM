@@ -12,12 +12,26 @@ body {
 }
 
 #main-body {
-    display: grid;
-    grid-template-columns: 30% 60%;
-    grid-column-gap: 5em;
-    grid-row-gap: 1em;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    column-gap: 5em;
+    row-gap: 1em;
     width: 80vw;
     margin: auto;
+}
+
+#last-song-column {
+    width: 30%;
+}
+
+#current-song-column {
+    width: 60%;
+}
+
+.song-column {
+    display: flex;
+    flex-direction: column;
 }
 
 #topbar {
@@ -48,6 +62,13 @@ body {
     display: flex;
     align-items: center;
     margin-right: 2em;
+}
+
+#user-img {
+    aspect-ratio: 1/1;
+    height: 1em;
+    border-radius: 0.2em;
+    margin-right: 0.3em;
 }
 
 #username {
@@ -126,6 +147,11 @@ body {
 
 .song-artist {
     font-size: 1em;
+    text-align: center;
+}
+
+.paused-box {
+    margin-top: 3em;
 }
 
 .song-info {

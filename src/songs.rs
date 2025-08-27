@@ -2,26 +2,34 @@ use crate::db::VoteCount;
 use paho_mqtt::{ConnectOptionsBuilder, CreateOptionsBuilder, Message, QoS, QOS_2};
 use serde::Deserialize;
 use std::sync::{Arc, LazyLock};
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use std::{env, process, thread};
+use std::ops::Add;
 use tokio::sync::Mutex;
 
 static MQTT_HOST: LazyLock<String> =
     LazyLock::new(|| env::var("MQTT_HOST").expect("MQTT_HOST not present"));
 
+static EMPTY_SONG: LazyLock<SongInfo> = LazyLock::new(|| SongInfo {
+    title: String::from(""),
+    artist: String::from(""),
+    cover_img: String::from(""),
+    song_id: String::from(""),
+    paused_on: SystemTime::UNIX_EPOCH,
+});
+
+#[derive(Clone)]
 pub struct SongInfo {
-    pub(crate) title: String,
-    pub(crate) artist: String,
-    pub(crate) cover_image: String,
-    pub(crate) song_id: String,
+    pub title: String,
+    pub artist: String,
+    pub cover_img: String,
+    pub song_id: String,
+    pub paused_on: SystemTime,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GuitarSongInfo {
     name: String,
-    album: String,
-    length_in_ms: u32,
-    ends_at: u32,
     spotify_id: String,
     image_url: String,
     artists: Vec<String>,
@@ -72,15 +80,18 @@ async fn listen(client: Arc<paho_mqtt::Client>, last_song: Arc<Mutex<SongInfo>>,
     for msg in queue.iter() {
         if let Some(msg) = msg {
             println!("Received Msg: {}", msg);
-            if msg.topic() == "music/play" {
+            if msg.topic() == "music/current_song_info" {
                 let payload: GuitarSongInfo = serde_json::from_str(&*msg.payload_str()).unwrap();
 
                 update_songs(last_song.clone(), current_song.clone(), SongInfo {
                     title: payload.name,
                     artist: payload.artists.join(", "),
-                    cover_image: payload.image_url,
+                    cover_img: payload.image_url,
                     song_id: payload.spotify_id,
+                    paused_on: SystemTime::UNIX_EPOCH,
                 }).await
+            } else if msg.topic() == "music/events/paused" || msg.topic() == "music/events/stopped" {
+                pause_song(last_song.clone(), current_song.clone()).await;
             }
         } else if !client.is_connected() {
             if try_reconnect(&client) {
@@ -91,8 +102,8 @@ async fn listen(client: Arc<paho_mqtt::Client>, last_song: Arc<Mutex<SongInfo>>,
 }
 
 fn subscribe_topics(client: &paho_mqtt::Client) {
-    let topics = &["music/pause", "music/play"];
-    client.subscribe_many(topics, &[QOS_2, QOS_2]).unwrap();
+    let topics = &["music/events/paused", "music/events/stopped", "music/current_song_info"];
+    client.subscribe_many_same_qos(topics, QOS_2).unwrap();
 }
 
 pub fn start_listening(client: Arc<paho_mqtt::Client>, last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<SongInfo>>) {
@@ -113,7 +124,34 @@ async fn update_songs(last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<S
     let mut last_guard = last_song.lock().await;
     let mut current_guard = current_song.lock().await;
 
+    // Within Timeframe
+    if current_guard.paused_on.add(Duration::from_secs(60 * 15)) > SystemTime::now() {
+        dbg!("Back From Pause");
+        if new_song.song_id == last_guard.song_id {
+            std::mem::swap(&mut *last_guard, &mut *current_guard);
+        } else {
+            *current_guard = new_song;
+        }
+        // Music Is Already Playing
+    } else if current_guard.paused_on == UNIX_EPOCH {
+        dbg!("No Swaps");
+        std::mem::swap(&mut *last_guard, &mut *current_guard);
+        *current_guard = new_song;
+
+        // Out Of Timeframe
+    } else {
+        dbg!("Reset Every Song");
+        *last_guard = EMPTY_SONG.clone();
+        *current_guard = new_song;
+    }
+}
+
+async fn pause_song(last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<SongInfo>>) {
+    println!("Pausing song");
+    let mut last_guard = last_song.lock().await;
+    let mut current_guard = current_song.lock().await;
+
     std::mem::swap(&mut *last_guard, &mut *current_guard);
 
-    *current_guard = new_song;
+    current_guard.paused_on = SystemTime::now();
 }

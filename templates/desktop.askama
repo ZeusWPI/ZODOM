@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
-    <link rel="stylesheet" href="/static/stylesheets/buttons.css" type="text/css">
+    <link rel="stylesheet" href="/static/stylesheets/buttons2.css" type="text/css">
     <link rel="stylesheet" href="/static/stylesheets/desktop.css" type="text/css">
     <title>ZODOM</title>
     <meta charset="UTF-8">
@@ -12,7 +12,8 @@
         <div id="topbar-left">ZODOM</div>
         <div class="flex-spacer"></div>
         <div id="topbar-right">
-            <span id="username">{{ username }}</span>
+        <img id="user-img" src="https://zpi.zeus.gent/image/{{ user.id }}?placeholder=true" alt="">
+            <span id="username">{{ user.username }}</span>
             <a href="/logout">
                 <img class="text-icon" src="/static/assets/logout.svg" alt="Logout Icon"/>
             </a>
@@ -22,16 +23,18 @@
 
 <div id="main-body">
     <!-- Last Song -->
+    {% if last_song.song_id != "" %}
+    <div id="last-song-column" class="song-column">
     <span class="songbox-label" id="last-song-label">Last Song</span>
     <div class="song-box" id="last-song-box">
         <div class="song-info">
-            <img src="{{ last_song_cover }}" class="song-cover" alt="Last Song Cover">
-            <span class="song-title">{{ last_song_title }}</span>
-            <span class="song-artist">{{ last_song_artist }}</span>
+            <img src="{{ last_song.cover_img }}" class="song-cover" alt="Last Song Cover">
+            <span class="song-title">{{ last_song.title }}</span>
+            <span class="song-artist">{{ last_song.artist }}</span>
         </div>
         <div class="button-div">
-            <form method="post" action="/submit_vote">
-                <input type="hidden" name="song_id" value="{{ last_song_id }}">
+            <form method="post" action="/submit_vote" class="btn-form">
+                <input type="hidden" name="song_id" value="{{ last_song.song_id }}">
                 <input type="hidden" name="likes" value="true">
                 <button type="submit"
                         class="vote-btn good-btn"
@@ -44,8 +47,8 @@
                     </span>
                 </button>
             </form>
-            <form method="post" action="/submit_vote">
-                <input type="hidden" name="song_id" value="{{ last_song_id }}">
+            <form method="post" action="/submit_vote" class="btn-form">
+                <input type="hidden" name="song_id" value="{{ last_song.song_id }}">
                 <input type="hidden" name="likes" value="false">
                 <button
                         class="vote-btn bad-btn"
@@ -60,18 +63,27 @@
             </form>
         </div>
     </div>
+    </div>
+    {% endif %}
 
     <!-- Current Song-->
+    <div id="current-song-column" class="song-column">
     <span class="songbox-label" id="current-song-label">Current Song</span>
     <div class="song-box" id="current-song-box">
+            {% if current_song.paused_on != UNIX_EPOCH %}
+            <div class="song-info paused-box">
+            <span class="song-title">There is nothing playing right now...</span>
+            <span class="song-artist">Play something or come back later.</span>
+            </div>
+            {% else %}
         <div class="song-info">
-            <img src="{{ current_song_cover }}" class="song-cover" alt="Current Song Cover">
-            <span class="song-title">{{ current_song_title }}</span>
-            <span class="song-artist">{{ current_song_artist }}</span>
+            <img src="{{ current_song.cover_img }}" class="song-cover" alt="Current Song Cover">
+            <span class="song-title">{{ current_song.title }}</span>
+            <span class="song-artist">{{ current_song.artist }}</span>
         </div>
         <div class="button-div">
-            <form method="post" action="/submit_vote">
-                <input type="hidden" name="song_id" value="{{ current_song_id }}">
+            <form method="post" action="/submit_vote" class="btn-form">
+                <input type="hidden" name="song_id" value="{{ current_song.song_id }}">
                 <input type="hidden" name="likes" value="true">
                 <button class="vote-btn good-btn"
                         {% if current_song_vote.is_some() && current_song_vote.unwrap() == true %}disabled{% endif %}
@@ -83,8 +95,8 @@
                     </span>
                 </button>
             </form>
-            <form method="post" action="/submit_vote">
-                <input type="hidden" name="song_id" value="{{ current_song_id }}">
+            <form method="post" action="/submit_vote" class="btn-form">
+                <input type="hidden" name="song_id" value="{{ current_song.song_id }}">
                 <input type="hidden" name="likes" value="false">
                 <button class="vote-btn bad-btn"
                         {% if current_song_vote.is_some() && current_song_vote.unwrap() == false %}
@@ -99,11 +111,13 @@
                 </button>
             </form>
         </div>
+            {% endif %}
+    </div>
     </div>
 </div>
 </body>
 <script>
-const currentSongId = "{{ current_song_id }}";
+const currentSongId = "{{ current_song.song_id }}";
 </script>
 <script src="/static/reload_on_songchange.js"></script>
 </html>
