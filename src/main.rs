@@ -102,7 +102,6 @@ async fn index(session: Session, State(state): State<AppState>) -> impl IntoResp
     if let Some(user) = user {
         let current_song_vote = db::get_vote(&state.db, user.id, &*current_song.song_id).await;
         let last_song_vote = db::get_vote(&state.db, user.id, &*last_song.song_id).await;
-        // TODO Fix After Designing Mobile
         let desk_template = VotePageTemplate {
             user: &user,
             current_song: &*current_song,

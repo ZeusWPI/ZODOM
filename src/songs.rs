@@ -31,15 +31,10 @@ pub struct SongInfo {
 struct GuitarSongInfo {
     name: String,
     spotify_id: String,
-    #[serde(default = "default_cover")]
-    image_url: String,
+    image_url: Option<String>,
     artists: Vec<String>,
 }
 
-fn default_cover() -> String {
-    //TODO Get Actual Default Cover
-    String::from("https://zpi.zeus.gent/image/385")
-}
 
 fn try_reconnect(cli: &paho_mqtt::Client) -> bool
 {
@@ -92,7 +87,7 @@ async fn listen(client: Arc<paho_mqtt::Client>, last_song: Arc<Mutex<SongInfo>>,
                 update_songs(last_song.clone(), current_song.clone(), SongInfo {
                     title: payload.name,
                     artist: payload.artists.join(", "),
-                    cover_img: payload.image_url,
+                    cover_img: payload.image_url.unwrap_or(String::from("/static/assets/cover-placeholder.svg")),
                     song_id: payload.spotify_id,
                     paused_on: SystemTime::UNIX_EPOCH,
                 }).await
