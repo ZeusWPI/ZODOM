@@ -1,5 +1,6 @@
 use serde::Serialize;
-use sqlx::{Row, SqlitePool};
+use sqlx::{Executor, Row, SqlitePool};
+use sqlx::sqlite::SqliteConnectOptions;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -8,6 +9,27 @@ pub struct VoteCount {
     pub votes_for: u32,
     pub votes_against: u32,
 }
+
+pub async fn create_client() -> SqlitePool {
+    let options = SqliteConnectOptions::new()
+        .filename("votes.db")
+        .create_if_missing(true);
+
+    SqlitePool::connect_with(options).await.unwrap()
+}
+
+pub async fn create_tables(db: &SqlitePool) {
+    db.execute(
+        "CREATE TABLE IF NOT EXISTS votes (
+        userId INTEGER,
+        songId VARCHAR(255),
+        likes BOOL,
+        voted_on DATETIME DEFAULT current_timestamp,
+        PRIMARY KEY(userId, songId)
+        )"
+    ).await.unwrap();
+}
+
 
 pub async fn add_vote(db: &SqlitePool, user_id: u32, likes: bool, song_id: &str) {
     println!(
@@ -22,7 +44,7 @@ pub async fn add_vote(db: &SqlitePool, user_id: u32, likes: bool, song_id: &str)
         INSERT INTO votes(userId, songId, likes)
         VALUES(?, ?, ?)
         ON CONFLICT(userId, songId) DO
-        UPDATE SET likes = ?;
+        UPDATE SET likes = ?, voted_on = current_timestamp;
 ",
     )
         .bind(user_id)

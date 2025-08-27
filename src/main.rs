@@ -64,9 +64,10 @@ async fn main() {
             cover_img: String::from("/static/assets/placeholders/song_cover.jpg"),
             paused_on: UNIX_EPOCH,
         })),
-        db: SqlitePool::connect("sqlite:test.db").await.unwrap(),
+        db: db::create_client().await,
         mqtt_client: Arc::new(songs::init_client()),
     };
+    db::create_tables(&app_state.db).await;
 
     songs::start_listening(Arc::clone(&app_state.mqtt_client), Arc::clone(&app_state.last_song), Arc::clone(&app_state.current_song));
 
