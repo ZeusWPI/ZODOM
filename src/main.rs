@@ -32,9 +32,10 @@ struct VoteSubmission {
     likes: bool,
 }
 
+
 #[derive(Template)]
-#[template(path = "desktop.askama")]
-struct DesktopTemplate<'a> {
+#[template(path = "vote_page.askama")]
+struct VotePageTemplate<'a> {
     current_song: &'a SongInfo,
     last_song: &'a SongInfo,
     user: &'a ZauthUser,
@@ -71,7 +72,7 @@ async fn main() {
 
     let static_files = ServeDir::new("./static/");
     let session_store = FileSessionStorage::new();
-    let session_layer = SessionManagerLayer::new(session_store).with_same_site(SameSite::Lax);
+    let session_layer = SessionManagerLayer::new(session_store).with_same_site(SameSite::Lax).with_secure(false); //TODO Remove secure(false)
 
     let app = Router::new()
         .route("/", get(index))
@@ -101,8 +102,8 @@ async fn index(session: Session, State(state): State<AppState>) -> impl IntoResp
     if let Some(user) = user {
         let current_song_vote = db::get_vote(&state.db, user.id, &*current_song.song_id).await;
         let last_song_vote = db::get_vote(&state.db, user.id, &*last_song.song_id).await;
-
-        let desk_template = DesktopTemplate {
+        // TODO Fix After Designing Mobile
+        let desk_template = VotePageTemplate {
             user: &user,
             current_song: &*current_song,
             last_song: &*last_song,

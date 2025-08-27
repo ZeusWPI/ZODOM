@@ -2,6 +2,7 @@
 <html lang="en-US">
 <head>
     <link rel="stylesheet" href="/static/stylesheets/buttons2.css" type="text/css">
+    <link rel="stylesheet" href="/static/stylesheets/mobile.css" type="text/css">
     <link rel="stylesheet" href="/static/stylesheets/desktop.css" type="text/css">
     <title>ZODOM</title>
     <link rel="icon" href="/static/assets/zodom-icon-with-background.svg">
@@ -33,8 +34,10 @@
     <div class="song-box" id="last-song-box">
         <div class="song-info">
             <img src="{{ last_song.cover_img }}" class="song-cover" alt="Last Song Cover">
+            <div class="song-info-text">
             <span class="song-title">{{ last_song.title }}</span>
             <span class="song-artist">{{ last_song.artist }}</span>
+            </div>
         </div>
         <div class="button-div">
             <form method="post" action="/submit_vote" class="btn-form">
@@ -82,8 +85,10 @@
             {% else %}
         <div class="song-info">
             <img src="{{ current_song.cover_img }}" class="song-cover" alt="Current Song Cover">
+            <div class="song-info-text">
             <span class="song-title">{{ current_song.title }}</span>
             <span class="song-artist">{{ current_song.artist }}</span>
+            </div>
         </div>
         <div class="button-div">
             <form method="post" action="/submit_vote" class="btn-form">
@@ -124,4 +129,14 @@
 const currentSongId = "{{ current_song.song_id }}";
 </script>
 <script src="/static/reload_on_songchange.js"></script>
+
+<style>
+html {
+    text-rendering: optimizeLegibility;
+    /** Icons are from svg-repo wolf kit */
+    --clr-dark: #000000;
+    --clr-light: #ffffff;
+    --clr-primary: #ff8000;
+}
+</style>
 </html>

@@ -1,0 +1,178 @@
+@media (max-width: 100vh) {
+    body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+    }
+
+    #topbar {
+        width: 100vw;
+        height: 5vh;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        background-color: var(--clr-primary);
+        color: var(--clr-light);
+        font-weight: bolder;
+        font-size: 2vh;
+        margin-bottom: 2rem;
+    }
+
+    #topbar * {
+        display: flex;
+        align-items: center;
+    }
+
+    #topbar-left {
+        display: flex;
+        align-items: center;
+        margin-left: 1em;
+    }
+
+    #topbar-right {
+        display: flex;
+        align-items: center;
+        margin-right: 1em;
+    }
+
+    #zodom-icon {
+        height: 1.6em;
+        filter: invert(100%);
+    }
+
+    #user-img {
+        aspect-ratio: 1/1;
+        height: 1em;
+        border-radius: 0.2em;
+        margin-right: 0.3em;
+    }
+
+    #username {
+        margin-right: 0.6em;
+    }
+
+    .flex-spacer {
+        flex-grow: 1;
+    }
+
+    .text-icon {
+        width: 1em;
+        aspect-ratio: 1 / 1;
+    }
+
+    #main-body {
+        display: flex;
+        flex-direction: column-reverse;
+        justify-content: space-between;
+        min-height: 85vh;
+    }
+
+    #current-song-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #current-song-label {
+        font-size: 4em;
+        font-weight: bolder;
+        margin-bottom: 0.4em;
+    }
+
+    #current-song-column .song-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 3em;
+    }
+
+    #current-song-column .song-cover {
+        width: 70vmin;
+        aspect-ratio: 1/1;
+        border-radius: 35px;
+        filter: drop-shadow(0.5em 0.5em 10px rgba(0, 0, 0, 0.4));
+    }
+
+    .song-title {
+        margin-top: 0.5em;
+        margin-bottom: 0.25em;
+        font-size: 1.5em;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .song-artist {
+        font-size: 1em;
+        text-align: center;
+    }
+
+    .button-div {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        margin-top: 30px
+    }
+
+    #last-song-label {
+        font-size: 4em;
+        font-weight: bold;
+        margin-bottom: 0.4em;
+    }
+
+    #last-song-column {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    #last-song-box {
+        display: flex;
+        flex-direction: row;
+        height: 15vh;
+        justify-content: space-between;
+        width: 90%;
+    }
+
+    #last-song-column .song-info {
+        height: 100%;
+        display: flex;
+    }
+
+    #last-song-column .song-cover {
+        height: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 35px;
+    }
+
+    .song-info-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #last-song-column .song-info-text {
+        align-items: start;
+        font-size: 2em;
+        margin-left: 1.6em;
+    }
+
+    #last-song-column .button-div {
+        flex-direction: column;
+    }
+
+    #current-song-column .vote-btn {
+        width: 150px;
+        height: 150px;
+    }
+
+    #current-song-column .vote-btn[disabled] {
+        width: 175px;
+        height: 175px;
+    }
+
+    #current-song-column .btn-form {
+        width: 175px;
+        height: 175px;
+    }
+}
