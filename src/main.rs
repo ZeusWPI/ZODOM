@@ -2,6 +2,7 @@ mod auth;
 mod db;
 mod songs;
 
+use std::ops::Add;
 use crate::auth::ZauthUser;
 use crate::songs::SongInfo;
 use askama::Template;
@@ -12,7 +13,7 @@ use axum::{routing::get, Form, Json, Router};
 use serde::Deserialize;
 use sqlx::SqlitePool;
 use std::sync::Arc;
-use std::time::UNIX_EPOCH;
+use std::time::{Duration, UNIX_EPOCH};
 use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
 use tower_sessions::{cookie::SameSite, Session, SessionManagerLayer};
@@ -51,19 +52,13 @@ struct LoginTemplate {}
 async fn main() {
     let app_state = AppState {
         current_song: Arc::new(Mutex::new(SongInfo {
-            song_id: String::from("3LQY0O87BlaOKMp56ST4hC"),
-            title: String::from("Une vie à t'aimer"),
-            artist: String::from("Lorien Testard, Alice Duport-Percier, Victor Borba"),
-            cover_img: String::from("/static/assets/placeholders/song_cover_2.jpg"),
-            paused_on: UNIX_EPOCH,
+            song_id: String::from(""),
+            title: String::from(""),
+            artist: String::from(""),
+            cover_img: String::from(""),
+            paused_on: UNIX_EPOCH.add(Duration::from_secs(1)),
         })),
-        last_song: Arc::new(Mutex::new(SongInfo {
-            song_id: String::from("4QEXM9na0mWIIt5Hwbsges"),
-            title: String::from("No Time to Explain"),
-            artist: String::from("Good Kid"),
-            cover_img: String::from("/static/assets/placeholders/song_cover.jpg"),
-            paused_on: UNIX_EPOCH,
-        })),
+        last_song: Arc::new(Mutex::new(songs::EMPTY_SONG.clone())),
         db: db::create_client().await,
         mqtt_client: Arc::new(songs::init_client()),
     };

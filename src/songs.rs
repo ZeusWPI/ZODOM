@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 static MQTT_HOST: LazyLock<String> =
     LazyLock::new(|| env::var("MQTT_HOST").expect("MQTT_HOST not present"));
 
-static EMPTY_SONG: LazyLock<SongInfo> = LazyLock::new(|| SongInfo {
+pub static EMPTY_SONG: LazyLock<SongInfo> = LazyLock::new(|| SongInfo {
     title: String::from(""),
     artist: String::from(""),
     cover_img: String::from(""),
@@ -148,7 +148,7 @@ async fn update_songs(last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<S
 }
 
 async fn pause_song(last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<SongInfo>>) {
-    println!("Pausing song");
+    dbg!("Pausing song");
     let mut last_guard = last_song.lock().await;
     let mut current_guard = current_song.lock().await;
 
