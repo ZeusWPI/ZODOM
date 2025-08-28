@@ -9,6 +9,8 @@ use tokio::sync::Mutex;
 
 static MQTT_HOST: LazyLock<String> =
     LazyLock::new(|| env::var("MQTT_HOST").expect("MQTT_HOST not present"));
+static MQTT_CLIENT_ID: LazyLock<String> =
+    LazyLock::new(|| env::var("MQTT_CLIENT_ID").expect("MQTT_CLIENT_ID not present"));
 
 pub static EMPTY_SONG: LazyLock<SongInfo> = LazyLock::new(|| SongInfo {
     title: String::from(""),
@@ -53,7 +55,7 @@ fn try_reconnect(cli: &paho_mqtt::Client) -> bool
 pub fn init_client() -> paho_mqtt::Client {
     let create_opts = CreateOptionsBuilder::new()
         .server_uri(MQTT_HOST.to_string())
-        .client_id("ZODOM".to_string())
+        .client_id(MQTT_CLIENT_ID.to_string())
         .finalize();
 
     let cli = paho_mqtt::Client::new(create_opts).unwrap_or_else(|err| {
@@ -135,7 +137,7 @@ async fn update_songs(last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<S
         }
         // Music Is Already Playing
     } else if current_guard.paused_on == UNIX_EPOCH {
-        if new_song.song_id == last_guard.song_id {
+        if new_song.song_id != last_guard.song_id {
             dbg!("No Swaps");
             std::mem::swap(&mut *last_guard, &mut *current_guard);
             *current_guard = new_song;
