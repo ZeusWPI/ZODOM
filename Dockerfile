@@ -23,7 +23,7 @@ RUN cargo build --release
 
 FROM debian:trixie-slim
 
-RUN apt-get update && apt-get install -y libssl-dev
+RUN apt-get update && apt-get install -y openssl ca-certificates
 
 COPY ./static ./static
 
