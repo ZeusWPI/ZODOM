@@ -1,3 +1,5 @@
+use std::env;
+use std::sync::LazyLock;
 use serde::Serialize;
 use sqlx::{Executor, Row, SqlitePool};
 use sqlx::sqlite::SqliteConnectOptions;
@@ -10,9 +12,13 @@ pub struct VoteCount {
     pub votes_against: u32,
 }
 
+static DB_LOCATION: LazyLock<String> =
+    LazyLock::new(|| env::var("DB_LOCATION").expect("DB_LOCATION not present"));
+
+
 pub async fn create_client() -> SqlitePool {
     let options = SqliteConnectOptions::new()
-        .filename("votes.db")
+        .filename(DB_LOCATION.as_str())
         .create_if_missing(true);
 
     SqlitePool::connect_with(options).await.unwrap()
