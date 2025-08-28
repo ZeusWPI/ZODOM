@@ -4,6 +4,7 @@ mod songs;
 mod error;
 
 use std::ops::Add;
+use std::process::exit;
 use crate::auth::ZauthUser;
 use crate::songs::SongInfo;
 use askama::Template;
@@ -15,6 +16,7 @@ use serde::Deserialize;
 use sqlx::SqlitePool;
 use std::sync::Arc;
 use std::time::{Duration, UNIX_EPOCH};
+use tokio::signal;
 use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
 use tower_sessions::{cookie::SameSite, Session, SessionManagerLayer};
@@ -86,7 +88,9 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.expect("Couldn't Start Listener");
     println!("Server on {}", listener.local_addr().map(|x| x.to_string()).unwrap_or("[unknown]".to_string()));
-    axum::serve(listener, app).await.expect("Couldn't Start Server");
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await.expect("Couldn't Start Server");
 }
 
 async fn index(session: Session, State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
@@ -142,4 +146,29 @@ async fn get_vote_count(State(state): State<AppState>, Json(payload): Json<VoteC
 
 async fn get_current_song_or_paused(State(state): State<AppState>) -> impl IntoResponse {
     Json(state.current_song.lock().await.song_id.clone())
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c().await.expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    println!("Shutdown signal received, shutting down gracefully...");
+    exit(0);
 }
