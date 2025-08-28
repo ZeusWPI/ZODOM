@@ -75,8 +75,8 @@ pub fn init_client() -> paho_mqtt::Client {
 }
 
 async fn listen(client: Arc<paho_mqtt::Client>, last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<SongInfo>>) {
-    subscribe_topics(&client);
     let queue = client.start_consuming();
+    subscribe_topics(&client);
     println!("Started Listening");
     for msg in queue.iter() {
         if let Some(msg) = msg {
@@ -135,9 +135,11 @@ async fn update_songs(last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<S
         }
         // Music Is Already Playing
     } else if current_guard.paused_on == UNIX_EPOCH {
-        dbg!("No Swaps");
-        std::mem::swap(&mut *last_guard, &mut *current_guard);
-        *current_guard = new_song;
+        if new_song.song_id == last_guard.song_id {
+            dbg!("No Swaps");
+            std::mem::swap(&mut *last_guard, &mut *current_guard);
+            *current_guard = new_song;
+        }
 
         // Out Of Timeframe
     } else {

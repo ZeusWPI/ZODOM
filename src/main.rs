@@ -1,6 +1,7 @@
 mod auth;
 mod db;
 mod songs;
+mod error;
 
 use std::ops::Add;
 use crate::auth::ZauthUser;
@@ -9,7 +10,7 @@ use askama::Template;
 use axum::extract::State;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::routing::post;
-use axum::{routing::get, Form, Json, Router};
+use axum::{debug_handler, routing::get, Error, Form, Json, Router};
 use serde::Deserialize;
 use sqlx::SqlitePool;
 use std::sync::Arc;
@@ -18,6 +19,7 @@ use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
 use tower_sessions::{cookie::SameSite, Session, SessionManagerLayer};
 use tower_sessions_file_store::FileSessionStorage;
+use crate::error::AppError;
 
 #[derive(Clone)]
 struct AppState {
@@ -82,53 +84,50 @@ async fn main() {
         .nest_service("/static", static_files)
         .with_state(app_state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    println!("server on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.expect("Couldn't Start Listener");
+    println!("Server on {}", listener.local_addr().map(|x| x.to_string()).unwrap_or("[unknown]".to_string()));
+    axum::serve(listener, app).await.expect("Couldn't Start Server");
 }
 
-async fn index(session: Session, State(state): State<AppState>) -> impl IntoResponse {
-    let user = session.get::<ZauthUser>("user").await.unwrap();
-    if user.is_none() {
-        return login().into_response();
-    }
-    let last_song = state.last_song.lock().await;
-    let current_song = state.current_song.lock().await;
-
-    if let Some(user) = user {
-        let current_song_vote = db::get_vote(&state.db, user.id, &*current_song.song_id).await;
-        let last_song_vote = db::get_vote(&state.db, user.id, &*last_song.song_id).await;
-        let desk_template = VotePageTemplate {
-            user: &user,
-            current_song: &*current_song,
-            last_song: &*last_song,
-            current_song_vote,
-            last_song_vote,
-        };
-        Html(desk_template.render().unwrap()).into_response()
-    } else {
-        panic!("Should Never Happen")
-    }
+async fn index(session: Session, State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
+    Ok(match session.get::<ZauthUser>("user").await? {
+        None => login()?.into_response(),
+        Some(user) => {
+            let last_song = state.last_song.lock().await;
+            let current_song = state.current_song.lock().await;
+            let current_song_vote = db::get_vote(&state.db, user.id, &*current_song.song_id).await;
+            let last_song_vote = db::get_vote(&state.db, user.id, &*last_song.song_id).await;
+            let desk_template = VotePageTemplate {
+                user: &user,
+                current_song: &*current_song,
+                last_song: &*last_song,
+                current_song_vote,
+                last_song_vote,
+            };
+            Html(desk_template.render()?).into_response()
+        }
+    })
 }
 
-fn login() -> impl IntoResponse {
+fn login() -> Result<impl IntoResponse, AppError> {
     let login_template = LoginTemplate {};
-    Html(login_template.render().unwrap())
+    Ok(Html(login_template.render()?))
 }
 
+#[debug_handler]
 async fn submit_vote(
     session: Session,
     State(state): State<AppState>,
     Form(payload): Form<VoteSubmission>,
-) -> Redirect {
-    match session.get::<ZauthUser>("user").await.unwrap() {
+) -> Result<Redirect, AppError> {
+    Ok(match session.get::<ZauthUser>("user").await? {
         None => Redirect::to("/"),
         Some(user) => {
             db::add_vote(&state.db, user.id, payload.likes, &*payload.song_id).await;
             songs::publish_vote_update(&state.mqtt_client, db::get_vote_count(&state.db, &*payload.song_id).await);
             Redirect::to("/")
         }
-    }
+    })
 }
 
 #[derive(Deserialize)]
