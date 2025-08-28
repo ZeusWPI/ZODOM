@@ -1,7 +1,7 @@
 use std::env;
 use std::sync::LazyLock;
 use serde::Serialize;
-use sqlx::{Executor, Row, SqlitePool};
+use sqlx::{Error, Executor, Row, SqlitePool};
 use sqlx::sqlite::SqliteConnectOptions;
 
 #[derive(Serialize)]
@@ -21,10 +21,10 @@ pub async fn create_client() -> SqlitePool {
         .filename(DB_LOCATION.as_str())
         .create_if_missing(true);
 
-    SqlitePool::connect_with(options).await.unwrap()
+    SqlitePool::connect_with(options).await.expect("Couldn't Connect To Database")
 }
 
-pub async fn create_tables(db: &SqlitePool) {
+pub async fn create_tables(db: &SqlitePool) -> Result<(), Error> {
     db.execute(
         "CREATE TABLE IF NOT EXISTS votes (
         userId INTEGER,
@@ -33,18 +33,12 @@ pub async fn create_tables(db: &SqlitePool) {
         voted_on DATETIME DEFAULT current_timestamp,
         PRIMARY KEY(userId, songId)
         )"
-    ).await.unwrap();
+    ).await?;
+    Ok(())
 }
 
 
-pub async fn add_vote(db: &SqlitePool, user_id: u32, likes: bool, song_id: &str) {
-    println!(
-        "User <{}> voted {} song <{}>",
-        user_id,
-        if likes { "For" } else { "Against" },
-        song_id
-    );
-
+pub async fn add_vote(db: &SqlitePool, user_id: u32, likes: bool, song_id: &str) -> Result<(), Error> {
     sqlx::query(
         "
         INSERT INTO votes(userId, songId, likes)
@@ -58,11 +52,11 @@ pub async fn add_vote(db: &SqlitePool, user_id: u32, likes: bool, song_id: &str)
         .bind(likes)
         .bind(likes)
         .execute(db)
-        .await
-        .unwrap();
+        .await?;
+    Ok(())
 }
 
-pub async fn get_vote(db: &SqlitePool, user_id: u32, song_id: &str) -> Option<bool> {
+pub async fn get_vote(db: &SqlitePool, user_id: u32, song_id: &str) -> Result<Option<bool>, Error> {
     let likes = sqlx::query(
         "
     SELECT likes FROM votes WHERE userId = ? AND songId = ?;
@@ -71,17 +65,16 @@ pub async fn get_vote(db: &SqlitePool, user_id: u32, song_id: &str) -> Option<bo
         .bind(user_id)
         .bind(song_id.to_string())
         .fetch_optional(db)
-        .await
-        .unwrap();
+        .await?;
 
-    if let Some(likes) = likes {
+    Ok(if let Some(likes) = likes {
         likes.get(0)
     } else {
         None
-    }
+    })
 }
 
-pub async fn get_vote_count(db: &SqlitePool, song_id: &str) -> VoteCount {
+pub async fn get_vote_count(db: &SqlitePool, song_id: &str) -> Result<VoteCount, Error> {
     let query = sqlx::query(
         "
     SELECT
@@ -92,12 +85,11 @@ pub async fn get_vote_count(db: &SqlitePool, song_id: &str) -> VoteCount {
     )
         .bind(song_id)
         .fetch_one(db)
-        .await
-        .unwrap();
+        .await?;
 
-    VoteCount {
+    Ok(VoteCount {
         song_id: song_id.to_string(),
         votes_for: query.get(0),
         votes_against: query.get(1),
-    }
+    })
 }

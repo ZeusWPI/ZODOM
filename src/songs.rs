@@ -3,7 +3,7 @@ use paho_mqtt::{ConnectOptionsBuilder, CreateOptionsBuilder, Message, QoS, QOS_2
 use serde::Deserialize;
 use std::sync::{Arc, LazyLock};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use std::{env, process, thread};
+use std::{env, thread};
 use std::ops::Add;
 use tokio::sync::Mutex;
 
@@ -115,7 +115,7 @@ pub fn publish_vote_update(client: &paho_mqtt::Client, vote_count: VoteCount) {
         serde_json::to_string(&vote_count).unwrap(),
         QoS::ExactlyOnce,
     );
-    client.publish(msg).unwrap_or_else(|_| { println!("Couldn't Publish Vote Update") }); //TODO Change To tracing library
+    client.publish(msg).unwrap_or_else(|_| { println!("Couldn't Publish Vote Update") });
 }
 
 async fn update_songs(last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<SongInfo>>, new_song: SongInfo) {

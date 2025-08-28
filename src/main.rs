@@ -10,7 +10,7 @@ use askama::Template;
 use axum::extract::State;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::routing::post;
-use axum::{debug_handler, routing::get, Error, Form, Json, Router};
+use axum::{debug_handler, routing::get, Form, Json, Router};
 use serde::Deserialize;
 use sqlx::SqlitePool;
 use std::sync::Arc;
@@ -64,13 +64,13 @@ async fn main() {
         db: db::create_client().await,
         mqtt_client: Arc::new(songs::init_client()),
     };
-    db::create_tables(&app_state.db).await;
+    let _ = db::create_tables(&app_state.db).await;
 
     songs::start_listening(Arc::clone(&app_state.mqtt_client), Arc::clone(&app_state.last_song), Arc::clone(&app_state.current_song));
 
     let static_files = ServeDir::new("./static/");
     let session_store = FileSessionStorage::new();
-    let session_layer = SessionManagerLayer::new(session_store).with_same_site(SameSite::Lax).with_secure(false); //TODO Remove secure(false)
+    let session_layer = SessionManagerLayer::new(session_store).with_same_site(SameSite::Lax);
 
     let app = Router::new()
         .route("/", get(index))
@@ -95,8 +95,8 @@ async fn index(session: Session, State(state): State<AppState>) -> Result<impl I
         Some(user) => {
             let last_song = state.last_song.lock().await;
             let current_song = state.current_song.lock().await;
-            let current_song_vote = db::get_vote(&state.db, user.id, &*current_song.song_id).await;
-            let last_song_vote = db::get_vote(&state.db, user.id, &*last_song.song_id).await;
+            let current_song_vote = db::get_vote(&state.db, user.id, &*current_song.song_id).await?;
+            let last_song_vote = db::get_vote(&state.db, user.id, &*last_song.song_id).await?;
             let desk_template = VotePageTemplate {
                 user: &user,
                 current_song: &*current_song,
@@ -123,8 +123,8 @@ async fn submit_vote(
     Ok(match session.get::<ZauthUser>("user").await? {
         None => Redirect::to("/"),
         Some(user) => {
-            db::add_vote(&state.db, user.id, payload.likes, &*payload.song_id).await;
-            songs::publish_vote_update(&state.mqtt_client, db::get_vote_count(&state.db, &*payload.song_id).await);
+            let _ = db::add_vote(&state.db, user.id, payload.likes, &*payload.song_id).await;
+            songs::publish_vote_update(&state.mqtt_client, db::get_vote_count(&state.db, &*payload.song_id).await?);
             Redirect::to("/")
         }
     })
@@ -136,8 +136,8 @@ struct VoteCountRequest {
     song_id: String,
 }
 
-async fn get_vote_count(State(state): State<AppState>, Json(payload): Json<VoteCountRequest>) -> impl IntoResponse {
-    Json(db::get_vote_count(&state.db, &payload.song_id).await)
+async fn get_vote_count(State(state): State<AppState>, Json(payload): Json<VoteCountRequest>) -> Result<impl IntoResponse, AppError> {
+    Ok(Json(db::get_vote_count(&state.db, &payload.song_id).await?))
 }
 
 async fn get_current_song_or_paused(State(state): State<AppState>) -> impl IntoResponse {
