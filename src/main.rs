@@ -8,7 +8,7 @@ use std::process::exit;
 use crate::auth::ZauthUser;
 use crate::songs::SongInfo;
 use askama::Template;
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::routing::post;
 use axum::{debug_handler, routing::get, Form, Json, Router};
@@ -80,7 +80,7 @@ async fn main() {
         .route("/oauth/callback", get(auth::callback))
         .route("/logout", get(auth::logout))
         .route("/submit_vote", post(submit_vote))
-        .route("/vote_count", get(get_vote_count))
+        .route("/vote_count/{song_id}", get(get_vote_count))
         .route("/current_song", get(get_current_song_or_paused))
         .layer(session_layer)
         .nest_service("/static", static_files)
@@ -140,8 +140,8 @@ struct VoteCountRequest {
     song_id: String,
 }
 
-async fn get_vote_count(State(state): State<AppState>, Json(payload): Json<VoteCountRequest>) -> Result<impl IntoResponse, AppError> {
-    Ok(Json(db::get_vote_count(&state.db, &payload.song_id).await?))
+async fn get_vote_count(State(state): State<AppState>, Path(song_id): Path<String>) -> Result<impl IntoResponse, AppError> {
+    Ok(Json(db::get_vote_count(&state.db, &*song_id).await?))
 }
 
 async fn get_current_song_or_paused(State(state): State<AppState>) -> impl IntoResponse {
