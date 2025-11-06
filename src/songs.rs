@@ -2,10 +2,8 @@ use crate::db::VoteCount;
 use paho_mqtt::{ConnectOptionsBuilder, CreateOptionsBuilder, Message, QoS, QOS_2};
 use serde::Deserialize;
 use std::sync::{Arc, LazyLock};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::Duration;
 use std::{env, thread};
-use std::ops::Add;
-use tokio::sync::Mutex;
 use crate::music_manager::{MusicManager, SongInfo};
 
 static MQTT_HOST: LazyLock<String> =

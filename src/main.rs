@@ -4,7 +4,6 @@ mod songs;
 mod error;
 mod music_manager;
 
-use std::ops::Add;
 use std::process::exit;
 use crate::auth::ZauthUser;
 use askama::Template;
@@ -15,7 +14,6 @@ use axum::{debug_handler, routing::get, Form, Json, Router};
 use serde::Deserialize;
 use sqlx::SqlitePool;
 use std::sync::Arc;
-use std::time::{Duration, UNIX_EPOCH};
 use tokio::signal;
 use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
