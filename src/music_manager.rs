@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{ SystemTime, UNIX_EPOCH};
 use tokio::sync::Mutex;
 
 #[derive(Clone)]
@@ -41,17 +41,17 @@ impl MusicManager {
     pub async fn pause(&self) {
         let current_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
         let mut music_state = self.music_state.lock().await;
-        
+
         music_state.shift(None);
         music_state.paused_at = Some(current_time);
     }
 
     pub async fn new_song(&mut self, new_song: SongInfo) {
-
+        let current_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
         let mut music_state = self.music_state.lock().await;
 
         if let Some(paused_at) = music_state.paused_at {
-            let secs_passed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() - paused_at;
+            let secs_passed = current_time - paused_at;
             if secs_passed >= 15 * 60 {
                 music_state.clear();
                 music_state.shift(Some(new_song));
@@ -71,10 +71,16 @@ impl MusicManager {
             }
 
         } else { // Not Paused
-            if let Some(current_song) = &music_state.current_song
-                && current_song.song_id == new_song.song_id && current_song.started_at == new_song.started_at {
+            if let Some(current_song) = &music_state.current_song {
+                if current_song.song_id == new_song.song_id && current_song.started_at == new_song.started_at {
                     // Duplicate MQTT Message
                     return
+                }
+                if current_time - current_song.started_at < 60 {
+                    // Song Not Played Long Enough To Keep As Last Song
+                    music_state.shift(Some(new_song));
+                    music_state.last_song = None;
+                }
             } else {
                 music_state.shift(Some(new_song))
             }
