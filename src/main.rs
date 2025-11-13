@@ -94,10 +94,14 @@ async fn index(session: Session, State(state): State<AppState>) -> Result<impl I
         None => login()?.into_response(),
         Some(user) => {
             let music_state = state.music_manager.read_state().await;
-            let last_song = &music_state.last_song;
-            let current_song = &music_state.current_song;
-            let current_song_vote = db::get_vote(&state.db, user.id, &*current_song.as_ref().unwrap().song_id).await?; // TODO Handle Unwrap
-            let last_song_vote = db::get_vote(&state.db, user.id, &*last_song.as_ref().unwrap().song_id).await?; // TODO Handle Unwrap
+            let current_song_vote = match &music_state.current_song {
+                Some(current_song) => db::get_vote(&state.db, user.id, &*current_song.song_id).await?,
+                None => None,
+            };
+            let last_song_vote = match &music_state.last_song {
+                Some(last_song) => db::get_vote(&state.db, user.id, &*last_song.song_id).await?,
+                None => None,
+            };
             let desk_template = VotePageTemplate {
                 user: &user,
                 music_state: &music_state,
@@ -141,7 +145,10 @@ async fn get_vote_count(State(state): State<AppState>, Path(song_id): Path<Strin
 }
 
 async fn get_current_song_or_paused(State(state): State<AppState>) -> impl IntoResponse {
-    Json(state.music_manager.read_state().await.current_song.as_ref().unwrap().song_id.clone()) // TODO Handle Unwrap
+    if let Some(current_song) = state.music_manager.read_state().await.current_song.as_ref() {
+        return Json(current_song.song_id.clone());
+    }
+    Json("paused".to_string())
 }
 
 async fn shutdown_signal() {
