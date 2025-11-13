@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::sync::Mutex;
 
 #[derive(Clone)]
@@ -38,16 +39,46 @@ impl MusicManager {
     }
 
     pub async fn pause(&self) {
+        let current_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
         let mut music_state = self.music_state.lock().await;
+        
         music_state.shift(None);
-
+        music_state.paused_at = Some(current_time);
     }
 
     pub async fn new_song(&mut self, new_song: SongInfo) {
 
         let mut music_state = self.music_state.lock().await;
 
-        //TODO
+        if let Some(paused_at) = music_state.paused_at {
+            let secs_passed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() - paused_at;
+            if secs_passed >= 15 * 60 {
+                music_state.clear();
+                music_state.shift(Some(new_song));
+                music_state.paused_at = None;
+
+            } else if let Some(last_song) = &music_state.last_song
+                && last_song.song_id == new_song.song_id {
+                if last_song.started_at == new_song.started_at { return; } // Duplicate MQTT Message
+
+                // Song came back from pause
+                music_state.unshift();
+                music_state.paused_at = None;
+
+            } else { // New Song After Pause
+                music_state.current_song = Some(new_song);
+                music_state.paused_at = None;
+            }
+
+        } else { // Not Paused
+            if let Some(current_song) = &music_state.current_song
+                && current_song.song_id == new_song.song_id && current_song.started_at == new_song.started_at {
+                    // Duplicate MQTT Message
+                    return
+            } else {
+                music_state.shift(Some(new_song))
+            }
+        }
     }
 }
 
@@ -63,5 +94,12 @@ impl MusicState {
         self.current_song = self.last_song.clone();
         self.last_song = self.last_last_song.clone();
         self.last_last_song = None;
+    }
+
+    pub fn clear(&mut self) {
+        self.current_song = None;
+        self.last_song = None;
+        self.last_last_song = None;
+        self.paused_at = Some(0);
     }
 }

@@ -57,7 +57,7 @@ async fn main() {
                 current_song: None,
                 last_song: None,
                 last_last_song: None,
-                paused_at: None,
+                paused_at: Some(0), // paused_at Should not be None when current_song is None
             }))},
         db: db::create_client().await,
         mqtt_client: Arc::new(songs::init_client()),
