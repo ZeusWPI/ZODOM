@@ -80,6 +80,8 @@ impl MusicManager {
                     // Song Not Played Long Enough To Keep As Last Song
                     music_state.shift(Some(new_song));
                     music_state.last_song = None;
+                } else {
+                    music_state.shift(Some(new_song))
                 }
             } else {
                 music_state.shift(Some(new_song))
