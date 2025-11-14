@@ -2,11 +2,10 @@ mod auth;
 mod db;
 mod songs;
 mod error;
+mod music_manager;
 
-use std::ops::Add;
 use std::process::exit;
 use crate::auth::ZauthUser;
-use crate::songs::SongInfo;
 use askama::Template;
 use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Redirect};
@@ -15,18 +14,17 @@ use axum::{debug_handler, routing::get, Form, Json, Router};
 use serde::Deserialize;
 use sqlx::SqlitePool;
 use std::sync::Arc;
-use std::time::{Duration, UNIX_EPOCH};
 use tokio::signal;
 use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
 use tower_sessions::{cookie::SameSite, Session, SessionManagerLayer};
 use tower_sessions_file_store::FileSessionStorage;
 use crate::error::AppError;
+use crate::music_manager::{MusicManager, MusicState};
 
 #[derive(Clone)]
 struct AppState {
-    current_song: Arc<Mutex<SongInfo>>,
-    last_song: Arc<Mutex<SongInfo>>,
+    music_manager: MusicManager,
     db: SqlitePool,
     mqtt_client: Arc<paho_mqtt::Client>,
 }
@@ -41,8 +39,7 @@ struct VoteSubmission {
 #[derive(Template)]
 #[template(path = "vote_page.askama")]
 struct VotePageTemplate<'a> {
-    current_song: &'a SongInfo,
-    last_song: &'a SongInfo,
+    music_state: &'a MusicState,
     user: &'a ZauthUser,
     current_song_vote: Option<bool>,
     last_song_vote: Option<bool>,
@@ -55,20 +52,19 @@ struct LoginTemplate {}
 #[tokio::main]
 async fn main() {
     let app_state = AppState {
-        current_song: Arc::new(Mutex::new(SongInfo {
-            song_id: String::from(""),
-            title: String::from(""),
-            artist: String::from(""),
-            cover_img: String::from(""),
-            paused_on: UNIX_EPOCH.add(Duration::from_secs(1)),
-        })),
-        last_song: Arc::new(Mutex::new(songs::EMPTY_SONG.clone())),
+        music_manager: MusicManager{
+            music_state: Arc::new(Mutex::from(MusicState {
+                current_song: None,
+                last_song: None,
+                last_last_song: None,
+                paused_at: Some(0), // paused_at Should not be None when current_song is None
+            }))},
         db: db::create_client().await,
         mqtt_client: Arc::new(songs::init_client()),
     };
     let _ = db::create_tables(&app_state.db).await;
 
-    songs::start_listening(Arc::clone(&app_state.mqtt_client), Arc::clone(&app_state.last_song), Arc::clone(&app_state.current_song));
+    songs::start_listening(Arc::clone(&app_state.mqtt_client), app_state.music_manager.clone().await);
 
     let static_files = ServeDir::new("./static/");
     let session_store = FileSessionStorage::new();
@@ -97,14 +93,18 @@ async fn index(session: Session, State(state): State<AppState>) -> Result<impl I
     Ok(match session.get::<ZauthUser>("user").await? {
         None => login()?.into_response(),
         Some(user) => {
-            let last_song = state.last_song.lock().await;
-            let current_song = state.current_song.lock().await;
-            let current_song_vote = db::get_vote(&state.db, user.id, &*current_song.song_id).await?;
-            let last_song_vote = db::get_vote(&state.db, user.id, &*last_song.song_id).await?;
+            let music_state = state.music_manager.read_state().await;
+            let current_song_vote = match &music_state.current_song {
+                Some(current_song) => db::get_vote(&state.db, user.id, &*current_song.song_id).await?,
+                None => None,
+            };
+            let last_song_vote = match &music_state.last_song {
+                Some(last_song) => db::get_vote(&state.db, user.id, &*last_song.song_id).await?,
+                None => None,
+            };
             let desk_template = VotePageTemplate {
                 user: &user,
-                current_song: &*current_song,
-                last_song: &*last_song,
+                music_state: &music_state,
                 current_song_vote,
                 last_song_vote,
             };
@@ -145,7 +145,10 @@ async fn get_vote_count(State(state): State<AppState>, Path(song_id): Path<Strin
 }
 
 async fn get_current_song_or_paused(State(state): State<AppState>) -> impl IntoResponse {
-    Json(state.current_song.lock().await.song_id.clone())
+    if let Some(current_song) = state.music_manager.read_state().await.current_song.as_ref() {
+        return Json(current_song.song_id.clone());
+    }
+    Json("paused".to_string())
 }
 
 async fn shutdown_signal() {
