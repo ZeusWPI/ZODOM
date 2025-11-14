@@ -78,13 +78,12 @@ impl MusicManager {
                 }
                 if current_time - current_song.started_at < 60 {
                     // Song Not Played Long Enough To Keep As Last Song
-                    music_state.shift(Some(new_song));
-                    music_state.last_song = None;
+                    music_state.current_song = Some(new_song);
                 } else {
-                    music_state.shift(Some(new_song))
+                    music_state.shift(Some(new_song));
                 }
             } else {
-                music_state.shift(Some(new_song))
+                music_state.shift(Some(new_song));
             }
         }
     }
