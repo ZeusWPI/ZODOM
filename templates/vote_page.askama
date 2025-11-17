@@ -28,7 +28,7 @@
 
 <div id="main-body">
     <!-- Last Song -->
-    {% if last_song.song_id != "" %}
+    {% if let Some(last_song) = music_state.last_song %}
     <div id="last-song-column" class="song-column">
     <span class="songbox-label" id="last-song-label">Last Song</span>
     <div class="song-box" id="last-song-box">
@@ -77,12 +77,7 @@
     <div id="current-song-column" class="song-column">
     <span class="songbox-label" id="current-song-label">Current Song</span>
     <div class="song-box" id="current-song-box">
-            {% if current_song.paused_on != UNIX_EPOCH %}
-            <div class="song-info paused-box">
-            <span class="song-title">There is nothing playing right now...</span>
-            <span class="song-artist">Play something or come back later.</span>
-            </div>
-            {% else %}
+            {% if let Some(current_song) = music_state.current_song %}
         <div class="song-info">
             <img src="{{ current_song.cover_img }}" class="song-cover" alt="Current Song Cover">
             <div class="song-info-text">
@@ -120,13 +115,18 @@
                 </button>
             </form>
         </div>
-            {% endif %}
+        {% else %}
+            <div class="song-info paused-box">
+            <span class="song-title">There is nothing playing right now...</span>
+            <span class="song-artist">Play something or come back later.</span>
+            </div>
+        {% endif %}
     </div>
     </div>
 </div>
 </body>
 <script>
-const currentSongId = "{{ current_song.song_id }}";
+const currentSongId = "{% if let Some(current_song) = music_state.current_song %}{{current_song.song_id}}{% else %}paused{% endif %}";
 </script>
 <script src="/static/reload_on_songchange.js"></script>
 

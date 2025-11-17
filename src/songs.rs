@@ -2,32 +2,17 @@ use crate::db::VoteCount;
 use paho_mqtt::{ConnectOptionsBuilder, CreateOptionsBuilder, Message, QoS, QOS_2};
 use serde::Deserialize;
 use std::sync::{Arc, LazyLock};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::Duration;
 use std::{env, thread};
-use std::ops::Add;
-use tokio::sync::Mutex;
+use crate::music_manager::{MusicManager, SongInfo};
 
 static MQTT_HOST: LazyLock<String> =
     LazyLock::new(|| env::var("MQTT_HOST").expect("MQTT_HOST not present"));
 static MQTT_CLIENT_ID: LazyLock<String> =
     LazyLock::new(|| env::var("MQTT_CLIENT_ID").expect("MQTT_CLIENT_ID not present"));
 
-pub static EMPTY_SONG: LazyLock<SongInfo> = LazyLock::new(|| SongInfo {
-    title: String::from(""),
-    artist: String::from(""),
-    cover_img: String::from(""),
-    song_id: String::from(""),
-    paused_on: SystemTime::UNIX_EPOCH,
-});
 
-#[derive(Clone)]
-pub struct SongInfo {
-    pub title: String,
-    pub artist: String,
-    pub cover_img: String,
-    pub song_id: String,
-    pub paused_on: SystemTime,
-}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GuitarSongInfo {
@@ -35,6 +20,7 @@ struct GuitarSongInfo {
     spotify_id: String,
     image_url: Option<String>,
     artists: Vec<String>,
+    started_at_ms: u64,
 }
 
 
@@ -70,7 +56,7 @@ pub fn init_client() -> paho_mqtt::Client {
     cli
 }
 
-async fn listen(client: Arc<paho_mqtt::Client>, last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<SongInfo>>) {
+async fn listen(client: Arc<paho_mqtt::Client>, mut music_manager: MusicManager) {
     let queue = client.start_consuming();
     subscribe_topics(&client);
     println!("Started Listening");
@@ -80,16 +66,16 @@ async fn listen(client: Arc<paho_mqtt::Client>, last_song: Arc<Mutex<SongInfo>>,
             match msg.topic() {
                 "music/current_song_info" => {
                     if let Ok(payload) = serde_json::from_str::<GuitarSongInfo>(&*msg.payload_str()) {
-                        update_songs(last_song.clone(), current_song.clone(), SongInfo {
+                        music_manager.new_song(SongInfo {
                             title: payload.name,
                             artist: payload.artists.join(", "),
                             cover_img: payload.image_url.unwrap_or(String::from("/static/assets/cover-placeholder.svg")),
                             song_id: payload.spotify_id,
-                            paused_on: SystemTime::UNIX_EPOCH,
+                            started_at: payload.started_at_ms / 1000,
                         }).await
                     }
                 }
-                "music/events/paused" | "music/events/stopped" => { pause_song(last_song.clone(), current_song.clone()).await; }
+                "music/events/paused" | "music/events/stopped" => { music_manager.pause().await }
                 _ => {}
             }
         } else if !client.is_connected() && try_reconnect(&client) {
@@ -104,9 +90,9 @@ fn subscribe_topics(client: &paho_mqtt::Client) {
     client.subscribe_many_same_qos(topics, QOS_2).expect("Failed To Subscribe to MQTT Topics");
 }
 
-pub fn start_listening(client: Arc<paho_mqtt::Client>, last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<SongInfo>>) {
+pub fn start_listening(client: Arc<paho_mqtt::Client>, music_manager: MusicManager) {
     println!("Spawning Listen Thread");
-    tokio::spawn(async { listen(client, last_song, current_song).await });
+    tokio::spawn(async { listen(client, music_manager).await });
 }
 
 pub fn publish_vote_update(client: &paho_mqtt::Client, vote_count: VoteCount) {
@@ -116,42 +102,4 @@ pub fn publish_vote_update(client: &paho_mqtt::Client, vote_count: VoteCount) {
         QoS::ExactlyOnce,
     );
     client.publish(msg).unwrap_or_else(|_| { println!("Couldn't Publish Vote Update") });
-}
-
-async fn update_songs(last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<SongInfo>>, new_song: SongInfo) {
-    let mut last_guard = last_song.lock().await;
-    let mut current_guard = current_song.lock().await;
-
-    // Within Timeframe
-    if current_guard.paused_on.add(Duration::from_secs(60 * 15)) > SystemTime::now() {
-        dbg!("Back From Pause");
-        if new_song.song_id == last_guard.song_id {
-            std::mem::swap(&mut *last_guard, &mut *current_guard);
-        } else {
-            *current_guard = new_song;
-        }
-        // Music Is Already Playing
-    } else if current_guard.paused_on == UNIX_EPOCH {
-        if new_song.song_id != last_guard.song_id {
-            dbg!("No Swaps");
-            std::mem::swap(&mut *last_guard, &mut *current_guard);
-            *current_guard = new_song;
-        }
-
-        // Out Of Timeframe
-    } else {
-        dbg!("Reset Every Song");
-        *last_guard = EMPTY_SONG.clone();
-        *current_guard = new_song;
-    }
-}
-
-async fn pause_song(last_song: Arc<Mutex<SongInfo>>, current_song: Arc<Mutex<SongInfo>>) {
-    dbg!("Pausing song");
-    let mut last_guard = last_song.lock().await;
-    let mut current_guard = current_song.lock().await;
-
-    std::mem::swap(&mut *last_guard, &mut *current_guard);
-
-    current_guard.paused_on = SystemTime::now();
 }
